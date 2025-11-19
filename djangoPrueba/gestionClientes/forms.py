@@ -1,5 +1,6 @@
 from .models import Cliente
 from django import forms
+import re
 
 # ====================
 # FORMULARIO DE CLIENTES
@@ -7,13 +8,14 @@ from django import forms
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'dni', 'email', 'telefono', 'activo']
+        fields = ['nombre', 'apellido', 'dni', 'email', 'telefono', 'direccion', 'activo']
         labels = {
             'nombre': 'Nombre',
             'apellido': 'Apellido',
             'dni': 'DNI',
             'email': 'Email',
             'telefono': 'Teléfono',
+            'direccion': 'Dirección',
             'activo': 'Activo'
         }
         widgets = {
@@ -48,11 +50,60 @@ class ClienteForm(forms.ModelForm):
     
     def clean_dni(self):
         dni = self.cleaned_data.get('dni')
-        # Verificar si ya existe otro cliente con ese DNI
-        if self.instance.pk:  # Si estamos editando
-            if Cliente.objects.filter(dni=dni).exclude(pk=self.instance.pk).exists():
-                raise forms.ValidationError('Ya existe un cliente con este DNI')
-        else:  # Si estamos creando
-            if Cliente.objects.filter(dni=dni).exists():
-                raise forms.ValidationError('Ya existe un cliente con este DNI')
-        return dni
+
+        # Si está vacío, dejar que la validación 'required' lo gestione (o lanzar error si querés)
+        if dni in (None, ''):
+            return dni
+
+        # Normalizar: asegurar string sin espacios
+        dni_str = str(dni).strip()
+
+        # Formato: solo números
+        if not dni_str.isdigit():
+            raise forms.ValidationError("El DNI solo puede contener números.")
+
+        # Longitud: máximo 8 caracteres
+        if len(dni_str) > 8:
+            raise forms.ValidationError("El DNI no puede tener más de 8 dígitos.")
+
+        # Unicidad: buscar otros clientes con el mismo DNI
+        qs = Cliente.objects.filter(dni=dni_str)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise forms.ValidationError("Ya existe un cliente con este DNI.")
+
+        # Devolver el valor en el tipo esperado por el modelo.
+        # Si en el model el campo es CharField devolvemos string:
+        return dni_str
+
+    
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
+            raise forms.ValidationError("El nombre solo puede contener letras.")
+
+        if len(nombre) > 100:
+            raise forms.ValidationError("El nombre no puede superar los 100 caracteres.")
+
+        return nombre
+
+    def clean_apellido(self):
+        apellido = self.cleaned_data.get('apellido')
+
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', apellido):
+            raise forms.ValidationError("El apellido solo puede contener letras.")
+
+        if len(apellido) > 100:
+            raise forms.ValidationError("El apellido no puede superar los 100 caracteres.")
+
+        return apellido
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get('telefono')
+
+        if not re.match(r'^\d{7,15}$', telefono):
+            raise forms.ValidationError("El teléfono debe contener entre 7 y 15 dígitos y puede incluir un al inicio.")
+
+        return telefono

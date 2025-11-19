@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Productos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-boxes"></i> Gestión de Productos</h2>
+        <a href="{% url 'producto_crear' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Nuevo Producto
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow">
+        <div class="card-body">
+            {% if productos %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Código</th>
+                            <!-- <th>Imagen</th> -->
+                            <th>Nombre</th>
+                            <th>Marca</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in productos %}
+                        <tr>
+                            <td>{{ p.idProducto }}</td>
+                            <td>{{ p.codProducto }}</td>
+
+                            <!-- <td class="text-center">
+                                {% if p.imgUrl %}
+                                <img src="{{ p.imgUrl }}" alt="{{ p.nombre }}" width="80" height="80" class="rounded">
+                                {% else %}
+                                <span class="text-muted">Sin imagen</span>
+                                {% endif %}
+                            </td> -->
+
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.idMarca.nombre }}</td>
+                            <td>{{ p.idCategoria.descripcion }}</td>
+                            <td>${{ p.precioUnitario }}</td>
+                            <td>{{ p.stock }}</td>
+
+                            <td class="text-center">
+                                <a href="{% url 'producto_editar' p.idProducto %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'producto_detalle' p.idProducto %}" class="btn btn-sm btn-info text-white">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <a href="{% url 'producto_eliminar' p.idProducto %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No hay productos registrados.
+                <a href="{% url 'producto_crear' %}" class="alert-link">Crear producto</a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

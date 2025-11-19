@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
 
 from .models import Productos, Marca, Categoria
 from .forms import ProductoForm, MarcaForm, CategoriaForm
@@ -43,13 +44,25 @@ def producto_editar(request, id):
 
     return render(request, "productos/form.html", {"form": form})
 
+@login_required
+def producto_detalle(request, id):
+    # Recupera el objeto Productos con el id proporcionado, o lanza un 404 si no existe.
+    producto = get_object_or_404(Productos.objects.select_related('idMarca', 'idCategoria'), pk=id)
+    
+    # Renderiza la plantilla de detalle, pasando el objeto producto.
+    return render(request, "productos/detalle.html", {"producto": producto})
 
 @login_required
 def producto_eliminar(request, id):
     producto = get_object_or_404(Productos, pk=id)
-    producto.delete()
-    messages.success(request, "Producto eliminado.")
-    return redirect("productos_list")
+
+    if request.method == "POST":
+        producto.delete()
+        messages.success(request, "Producto eliminado.")
+        return redirect("productos_list")
+
+    # Si es GET: mostrar confirmación
+    return render(request, "productos/confirm_delete.html", {"producto": producto})
 
 # ============================================================
 # MARCAS
@@ -73,6 +86,32 @@ def marca_crear(request):
 
     return render(request, "marcas/form.html", {"form": form})
 
+def marca_editar(request, id):
+    marca = get_object_or_404(Marca, pk=id)
+
+    if request.method == "POST":
+        form = MarcaForm(request.POST, instance=marca)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Marca actualizada correctamente.")
+            return redirect("marcas_list")
+    else:
+        form = MarcaForm(instance=marca)
+
+    return render(request, "marcas/form.html", {"form": form, "accion": "Editar"})
+
+
+@login_required
+def marca_eliminar(request, id):
+    marca = get_object_or_404(Marca, pk=id)
+
+    if request.method == "POST":
+        marca.delete()
+        messages.success(request, f"Marca '{marca.nombre}' eliminada.")
+        return redirect("marcas_list")
+
+    return render(request, "marcas/confirm_delete.html", {"marca": marca})
+
 
 # ============================================================
 # CATEGORÍAS
@@ -95,3 +134,65 @@ def categoria_crear(request):
         form = CategoriaForm()
 
     return render(request, "categorias/form.html", {"form": form})
+
+@login_required
+def categoria_editar(request, id):
+    categoria = get_object_or_404(Categoria, pk=id)
+
+    if request.method == "POST":
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoría actualizada correctamente.")
+            return redirect("categorias_list")
+    else:
+        form = CategoriaForm(instance=categoria)
+
+    return render(request, "categorias/form.html", {"form": form, "accion": "Editar"})
+
+@login_required
+def categoria_eliminar(request, id):
+    categoria = get_object_or_404(Categoria, pk=id)
+
+    if request.method == "POST":
+        nombre = categoria.descripcion
+        categoria.delete()
+        messages.success(request, f"Categoría '{nombre}' eliminada.")
+        return redirect("categorias_list")
+
+    return render(request, "categorias/confirm_delete.html", {"categoria": categoria})
+
+@login_required
+def marca_crear_ajax(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+
+        if not nombre:
+            return JsonResponse({"error": "El nombre es obligatorio"}, status=400)
+
+        marca = Marca.objects.create(nombre=nombre)
+
+        return JsonResponse({
+            "id": marca.idMarca,
+            "nombre": marca.nombre
+        })
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+@login_required
+def categoria_crear_ajax(request):
+    if request.method == "POST":
+        descripcion = request.POST.get("descripcion")
+
+        if not descripcion:
+            return JsonResponse({"error": "La descripción es obligatoria"}, status=400)
+
+        categoria = Categoria.objects.create(descripcion=descripcion)
+
+        return JsonResponse({
+            "id": categoria.idCategoria,
+            "descripcion": categoria.descripcion
+        })
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}{{ producto.nombre }} - Detalle del Producto{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Botón de volver (desktop) -->
+    <div class="d-none d-lg-block mb-4">
+        <a href="{% url 'productos_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+        </a>
+    </div>
+    <!-- Card Principal -->
+    <div class="card border-2 border-light shadow-sm overflow-hidden">
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <!-- Columna de Imagen -->
+                <div class="col-lg-5 position-relative" style="background-color: white;">
+                    <div class="d-flex align-items-center justify-content-center" style="min-height: 500px;">
+                        {% if producto.imgUrl %}
+                            <img src="{{ producto.imgUrl }}" 
+                                 class="img-fluid rounded-3" 
+                                 alt="{{ producto.nombre }}" 
+                                 style="max-height: 450px; object-fit: contain;">
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-image fa-5x mb-3 opacity-25"></i>
+                                <p class="mb-0">Sin imagen disponible</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Badge de Estado en la imagen -->
+                    <div class="position-absolute top-0 end-0 m-3">
+                        {% if producto.activo %}
+                            <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">
+                                <i class="fas fa-check-circle me-1"></i> Activo
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm">
+                                <i class="fas fa-ban me-1"></i> Inactivo
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Columna de Información -->
+                <div class="col-lg-7 border-start">
+                    <div class="p-4 p-lg-5">
+                        <!-- Header con título y acciones -->
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="flex-grow-1">
+                                <h1 class="h2 fw-bold mb-2">{{ producto.nombre }}</h1>
+                                <p class="text-muted mb-0">
+                                    <small>
+                                        <i class="fas fa-barcode me-1"></i> {{ producto.codProducto }}
+                                    </small>
+                                </p>
+                            </div>
+                            <div class="ms-3">
+                                <a href="{% url 'producto_editar' producto.idProducto %}" 
+                                   class="btn btn-success rounded-pill px-4">
+                                    <i class="fas fa-edit me-2"></i>Editar
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Precio destacado -->
+                        <div class="bg-success bg-opacity-10 rounded-3 p-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <p class="text-muted small mb-1">Precio Unitario</p>
+                                    <h2 class="text-success fw-bold mb-0">
+                                        ${{ producto.precioUnitario|floatformat:2 }}
+                                    </h2>
+                                </div>
+                                <div class="ms-auto">
+                                    <div class="text-end">
+                                        <p class="text-muted small mb-1">Stock Disponible</p>
+                                        <h4 class="mb-0 fw-bold">
+                                            <span class="badge {% if producto.stock > 10 %}bg-success{% elif producto.stock > 0 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                                {{ producto.stock }} unidades
+                                            </span>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de Categoría y Marca -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <p class="text-muted small mb-1">
+                                        <i class="fas fa-tag me-1"></i> Marca
+                                    </p>
+                                    <p class="fw-semibold mb-0">{{ producto.idMarca.nombre }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <p class="text-muted small mb-1">
+                                        <i class="fas fa-folder me-1"></i> Categoría
+                                    </p>
+                                    <p class="fw-semibold mb-0">{{ producto.idCategoria.descripcion }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        {% if producto.descripcion %}
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>Descripción
+                            </h5>
+                            <div class="text-muted" style="line-height: 1.7;">
+                                {{ producto.descripcion|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Información de Registro -->
+                        <div class="border-top pt-4">
+                            <h6 class="text-muted small text-uppercase mb-3 fw-bold">Información de Registro</h6>
+                            <div class="row g-2 small">
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calendar-plus text-primary me-2"></i>
+                                        <div>
+                                            <p class="mb-0 text-muted">Fecha de Creación</p>
+                                            <p class="mb-0 fw-semibold">{{ producto.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-sync-alt text-warning me-2"></i>
+                                        <div>
+                                            <p class="mb-0 text-muted">Última Actualización</p>
+                                            <p class="mb-0 fw-semibold">{{ producto.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón de volver (mobile) -->
+                        <div class="d-lg-none mt-4">
+                            <a href="{% url 'productos_list' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos adicionales para mejorar la experiencia */
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        font-size: 1.2rem;
+    }
+    
+    .card {
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .img-fluid {
+        transition: transform 0.3s ease;
+    }
+    
+    .img-fluid:hover {
+        transform: scale(1.05);
+    }
+    
+    @media (max-width: 991px) {
+        .card-body .p-lg-5 {
+            padding: 2rem !important;
+        }
+    }
+</style>
+{% endblock %}

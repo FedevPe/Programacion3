@@ -1,14 +1,13 @@
 from django import forms
 from .models import Productos, Marca, Categoria
 
-# ====================
-# FORMULARIO DE PRODUCTOS
-# ====================
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Productos
-        fields = ['codProducto', 'nombre', 'descripcion', 'imgUrl', 
-                  'precioUnitario', 'idMarca', 'idCategoria', 'stock', 'activo']
+        fields = [
+            'codProducto', 'nombre', 'descripcion', 'imgUrl',
+            'precioUnitario', 'idMarca', 'idCategoria', 'stock', 'activo'
+        ]
         labels = {
             'codProducto': 'Código de Producto',
             'nombre': 'Nombre',
@@ -57,18 +56,43 @@ class ProductoForm(forms.ModelForm):
                 'class': 'form-check-input'
             })
         }
-    
+
+    # -------------------------
+    # VALIDACIONES PERSONALIZADAS
+    # -------------------------
     def clean_codProducto(self):
         cod = self.cleaned_data.get('codProducto')
-        if len(cod) > 5:
-            raise forms.ValidationError('El código no puede tener más de 5 caracteres')
+        if len(cod) >= 10:
+            raise forms.ValidationError('El código no puede tener más de 10 caracteres')
         return cod.upper()
-    
+
     def clean_precioUnitario(self):
         precio = self.cleaned_data.get('precioUnitario')
         if precio <= 0:
             raise forms.ValidationError('El precio debe ser mayor a 0')
         return precio
+
+    # -------------------------
+    # CONFIGURAR VISIBILIDAD DE "activo"
+    # -------------------------
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Si NO tiene PK → es creación → ocultar campo "activo"
+        if not self.instance.pk:
+            self.fields['activo'].widget = forms.HiddenInput()
+            self.fields['activo'].initial = True
+
+    # Refuerzo opcional para que siempre se guarde activo=True en creación
+    def save(self, commit=True):
+        producto = super().save(commit=False)
+
+        if not self.instance.pk:
+            producto.activo = True  # siempre activo al crear
+
+        if commit:
+            producto.save()
+        return producto
 
 # ====================
 # FORMULARIO DE BÚSQUEDA

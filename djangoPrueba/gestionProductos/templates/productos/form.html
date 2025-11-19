@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ form.instance.pk|yesno:"Editar,Nuevo" }} Producto{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4 mb-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-box text-secondary me-2"></i>
+                {{ form.instance.pk|yesno:"Editar Producto,Nuevo Producto" }}
+            </h2>
+            <p class="text-muted mb-0">
+                <small>Complete el formulario para {{ form.instance.pk|yesno:"actualizar,crear" }} el producto</small>
+            </p>
+        </div>
+        <a href="{% url 'productos_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Formulario Principal -->
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row g-4">
+            <!-- Columna Izquierda - Datos del Producto -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-4 pb-3 border-bottom">
+                            <i class="fas fa-info-circle text-secondary me-2"></i>
+                            Información del Producto
+                        </h5>
+
+                        <div class="row g-3">
+                            <!-- Código -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-barcode text-muted me-1"></i>
+                                    {{ form.codProducto.label }}
+                                </label>
+                                {{ form.codProducto }}
+                                {% if form.codProducto.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {{ form.codProducto.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Nombre -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-tag text-muted me-1"></i>
+                                    {{ form.nombre.label }}
+                                </label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {{ form.nombre.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Marca -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-copyright text-muted me-1"></i>
+                                    {{ form.idMarca.label }}
+                                </label>
+                                <div class="input-group">
+                                    {{ form.idMarca }}
+                                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalMarca" title="Crear nueva marca">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                {% if form.idMarca.errors %}
+                                    <div class="text-danger small mt-1">{{ form.idMarca.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Categoría -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-folder text-muted me-1"></i>
+                                    {{ form.idCategoria.label }}
+                                </label>
+                                <div class="input-group">
+                                    {{ form.idCategoria }}
+                                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalCategoria" title="Crear nueva categoría">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                {% if form.idCategoria.errors %}
+                                    <div class="text-danger small mt-1">{{ form.idCategoria.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Precio -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign text-muted me-1"></i>
+                                    {{ form.precioUnitario.label }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-secondary text-white">$</span>
+                                    {{ form.precioUnitario }}
+                                </div>
+                                {% if form.precioUnitario.errors %}
+                                    <div class="text-danger small mt-1">{{ form.precioUnitario.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Stock -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-boxes text-muted me-1"></i>
+                                    {{ form.stock.label }}
+                                </label>
+                                {{ form.stock }}
+                                {% if form.stock.errors %}
+                                    <div class="text-danger small mt-1">{{ form.stock.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Activo (solo en edición) -->
+                            {% if form.instance.pk %}
+                            <div class="col-12">
+                                <div class="card bg-light border-0 p-3">
+                                    <div class="form-check form-switch">
+                                        {{ form.activo }}
+                                        <label class="form-check-label fw-semibold" for="{{ form.activo.id_for_label }}">
+                                            {{ form.activo.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Descripción -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-align-left text-muted me-1"></i>
+                                    {{ form.descripcion.label }}
+                                </label>
+                                {{ form.descripcion }}
+                                {% if form.descripcion.errors %}
+                                    <div class="text-danger small mt-1">{{ form.descripcion.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha - Imagen -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-4 pb-3 border-bottom">
+                            <i class="fas fa-image text-secondary me-2"></i>
+                            Imagen del Producto
+                        </h5>
+
+                        <!-- Vista previa de imagen -->
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <img id="preview" 
+                                    src="{{ form.instance.imgUrl|default:'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM=' }}"
+                                    class="img-fluid rounded-3 shadow-sm border"
+                                    style="max-height: 350px; object-fit: contain; background: #f8f9fa;"
+                                    alt="Vista previa"
+                                    onerror="this.onerror=null; this.src='https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM=';">
+                                
+                                <!-- Badge de preview -->
+                                <span class="position-absolute top-0 start-0 m-2 badge bg-dark bg-opacity-75">
+                                    <i class="fas fa-eye me-1"></i>Vista previa
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- URL de imagen -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-link text-muted me-1"></i>
+                                URL de la Imagen
+                            </label>
+                            <div class="input-group">
+                                {{ form.imgUrl }}
+                                <button type="button" class="btn btn-outline-secondary" id="btnTestImagen" title="Probar imagen">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Ingrese la URL de una imagen externa
+                            </small>
+                            {% if form.imgUrl.errors %}
+                                <div class="text-danger small mt-1">{{ form.imgUrl.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-end align-items-center">
+                    <div>
+                        <button type="submit" class="btn btn-success btn-lg px-5">
+                            <i class="fas fa-save me-2"></i>
+                            Guardar
+                        </button>
+                        <a href="{% url 'productos_list' %}" class="btn btn-outline-secondary btn-lg px-4 ms-2">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<!-- ============================================================
+     MODAL CREAR MARCA
+=============================================================== -->
+<div class="modal fade" id="modalMarca" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-copyright me-2"></i>
+                    Crear Nueva Marca
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label for="marca_nombre" class="form-label fw-semibold">Nombre de la Marca</label>
+                    <input id="marca_nombre" type="text" class="form-control form-control-lg" placeholder="Nombre de la marca">
+                </div>
+                <p id="marca_error" class="text-danger mb-0"></p>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button class="btn btn-success" id="btnGuardarMarca">
+                    <i class="fas fa-check me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     MODAL CREAR CATEGORÍA
+=============================================================== -->
+<div class="modal fade" id="modalCategoria" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-folder me-2"></i>
+                    Crear Nueva Categoría
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label for="categoria_descripcion" class="form-label fw-semibold">Descripción de la Categoría</label>
+                    <input id="categoria_descripcion" type="text" class="form-control form-control-lg" placeholder="Nombre de la categoría">
+                </div>
+                <p id="categoria_error" class="text-danger mb-0"></p>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button class="btn btn-success" id="btnGuardarCategoria">
+                    <i class="fas fa-check me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     ESTILOS PERSONALIZADOS
+=============================================================== -->
+<style>
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.15);
+    }
+
+    .btn {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(0px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .input-group-text {
+        border-radius: 0.5rem 0 0 0.5rem;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+
+    .card {
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .form-check-input:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+
+    .modal-content {
+        border-radius: 1rem;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+    }
+
+    @media (max-width: 991px) {
+        .sticky-top {
+            position: relative !important;
+            top: 0 !important;
+        }
+    }
+</style>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+=============================================================== -->
+<script>
+// Guardar Marca
+document.getElementById("btnGuardarMarca").onclick = function() {
+    let nombre = document.getElementById("marca_nombre").value.trim();
+    
+    if (!nombre) {
+        document.getElementById("marca_error").innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Por favor ingrese un nombre';
+        return;
+    }
+
+    fetch("{% url 'marca_crear_ajax' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "nombre=" + encodeURIComponent(nombre)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById("marca_error").innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>' + data.error;
+            return;
+        }
+
+        let select = document.getElementById("id_idMarca");
+        let opt = new Option(data.nombre, data.id);
+        opt.selected = true;
+        select.add(opt);
+
+        document.getElementById("marca_nombre").value = "";
+        document.getElementById("marca_error").innerText = "";
+
+        bootstrap.Modal.getInstance(document.getElementById("modalMarca")).hide();
+        
+        // Mostrar notificación de éxito
+        showNotification("Marca creada exitosamente", "success");
+    });
+};
+
+
+// Guardar Categoría
+document.getElementById("btnGuardarCategoria").onclick = function() {
+    let descripcion = document.getElementById("categoria_descripcion").value.trim();
+    
+    if (!descripcion) {
+        document.getElementById("categoria_error").innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Por favor ingrese una descripción';
+        return;
+    }
+
+    fetch("{% url 'categoria_crear_ajax' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "descripcion=" + encodeURIComponent(descripcion)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById("categoria_error").innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>' + data.error;
+            return;
+        }
+
+        let select = document.getElementById("id_idCategoria");
+        let opt = new Option(data.descripcion, data.id);
+        opt.selected = true;
+        select.add(opt);
+
+        document.getElementById("categoria_descripcion").value = "";
+        document.getElementById("categoria_error").innerText = "";
+
+        bootstrap.Modal.getInstance(document.getElementById("modalCategoria")).hide();
+        
+        // Mostrar notificación de éxito
+        showNotification("Categoría creada exitosamente", "success");
+    });
+};
+
+
+// Vista previa de imagen
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("id_imgUrl");
+    const preview = document.getElementById("preview");
+    const btnTest = document.getElementById("btnTestImagen");
+
+    function actualizarVista() {
+        const url = input.value.trim();
+        if (url.length > 5) {
+            preview.src = url;
+        }
+    }
+
+    input.addEventListener("input", actualizarVista);
+    
+    if (btnTest) {
+        btnTest.addEventListener("click", actualizarVista);
+    }
+});
+
+
+// Función para mostrar notificaciones
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.style.zIndex = "9999";
+    alertDiv.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+
+{% endblock %}

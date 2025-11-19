@@ -26,7 +26,7 @@ class Categoria(models.Model):
 
 class Productos(models.Model):
     idProducto = models.AutoField(primary_key=True)
-    codProducto = models.CharField(max_length = 5)
+    codProducto = models.CharField(max_length = 10)
     nombre = models.CharField(max_length = 150)
     descripcion = models.TextField()
     imgUrl = models.CharField(max_length=500, default='')

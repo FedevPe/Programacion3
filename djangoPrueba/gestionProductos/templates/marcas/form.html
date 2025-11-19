@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>{{ accion|default:"Crear" }} Marca</h2>
+    <hr>
+    <div class="rounded border border-radius p-4" style="background-color: white;">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+        
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <a href="{% url 'marcas_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
