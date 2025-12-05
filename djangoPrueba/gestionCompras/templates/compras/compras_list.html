@@ -1,0 +1,514 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Compras - Sistema de Gestión{% endblock %}
+
+{% block content %}
+<div class="" style="padding-left: 100px; padding-right: 100px;">
+    <!-- Header -->
+    <div class="compras-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-shopping-cart"></i> Gestión de Compras</h2>
+                <p class="mb-0 mt-2">Administra las compras a proveedores</p>
+            </div>
+            <a href="{% url 'compra_crear' %}" class="btn btn-create">
+                <i class="fas fa-plus"></i> Nueva Compra
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card d-flex align-items-center justify-content-center flex-column">                
+                <div class="icon d-flex align-items-center justify-content-center">
+                    <div class="value me-2">{{ stats.pendientes }}</div>
+                    <i class="fas fa-clock text-warning me-2"></i>
+                </div>
+                <div class="label">Pendientes</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card d-flex align-items-center justify-content-center flex-column">
+                <div class="icon d-flex align-items-center justify-content-center" style="color: var(--slate-success);">
+                    <div class="value me-2">{{ stats.confirmadas }}</div>
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="label">Confirmadas</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card d-flex align-items-center justify-content-center flex-column">
+                <div class="icon text-danger d-flex align-items-center justify-content-center">
+                    <div class="value me-2">{{ stats.canceladas }}</div>
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="label">Canceladas</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3 h-100">
+            <div class="stats-card">
+                <div class="value"><i class="fas fa-dollar-sign"></i>{{ stats.total }}</div>
+                <div class="label">Total Invertido</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido Principal: Filtros + Lista -->
+    <div class="row">
+        <!-- Columna de Filtros (Izquierda) -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-card">
+                <h5><i class="fas fa-filter"></i> Filtros</h5>
+                <form method="get" id="formFiltros">
+                    <div class="filter-group">
+                        <label for="estado">
+                            <i class="fas fa-info-circle"></i> Estado
+                        </label>
+                        <select name="estado" id="estado" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="CONFIRMADA">Confirmada</option>
+                            <option value="CANCELADA">Cancelada</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="proveedor">
+                            <i class="fas fa-truck"></i> Proveedor
+                        </label>
+                        <select name="proveedor" id="proveedor" class="form-select">
+                            <option value="">Todos</option>
+                            {% for proveedor in proveedores %}
+                            <option value="{{ proveedor.id }}">{{ proveedor.razon_social }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="fecha_desde">
+                            <i class="fas fa-calendar-alt"></i> Fecha desde
+                        </label>
+                        <input type="date" name="fecha_desde" id="fecha_desde" class="form-control">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="fecha_hasta">
+                            <i class="fas fa-calendar-alt"></i> Fecha hasta
+                        </label>
+                        <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control">
+                    </div>
+
+                    <button type="submit" class="btn btn-filtrar">
+                        <i class="fas fa-search"></i> Aplicar Filtros
+                    </button>
+                    
+                    <a href="{% url 'compras_list' %}" class="btn btn-limpiar">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Columna de Lista de Compras (Derecha) -->
+        <div class="col-lg-9">
+            <div class="compras-content-wrapper">
+                <div class="content-header">
+                    <h5><i class="fas fa-list"></i> Lista de Compras</h5>
+                    <span class="badge bg-slate-primary">{{ compras|length }} compra{{ compras|length|pluralize }}</span>
+                </div>
+
+                {% if compras %}
+                <div class="table-responsive">
+                    <table class="table table-compras">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Fecha</th>
+                                <th>Proveedor</th>
+                                <th>Método Pago</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for compra in compras %}
+                            <tr>
+                                <td><strong>#{{ compra.idCompra }}</strong></td>
+                                <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                                <td>
+                                    <i class="fas fa-truck text-slate-primary"></i>
+                                    {{ compra.proveedor.razon_social }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ compra.get_metodo_pago_display }}</span>
+                                </td>
+                                <td><strong class="text-slate-primary">${{ compra.total_con_iva|floatformat:2 }}</strong></td>
+                                <td>
+                                    {% if compra.estado == 'PENDIENTE' %}
+                                    <span class="badge-estado badge-pendiente">
+                                        <i class="fas fa-clock"></i> Pendiente
+                                    </span>
+                                    {% elif compra.estado == 'CONFIRMADA' %}
+                                    <span class="badge-estado badge-confirmada">
+                                        <i class="fas fa-check-circle"></i> Confirmada
+                                    </span>
+                                    {% else %}
+                                    <span class="badge-estado badge-cancelada">
+                                        <i class="fas fa-times-circle"></i> Cancelada
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'compra_detalle' compra.idCompra %}" 
+                                       class="btn btn-ver btn-sm me-1" 
+                                       title="Ver detalle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if compra.estado == 'PENDIENTE' %}
+                                    <button class="btn btn-eliminar-compra btn-sm" 
+                                            onclick="confirmarEliminacion('{{ compra.idCompra }}')"
+                                            title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h4>No hay compras registradas</h4>
+                    <p>Comienza a registrar tus compras a proveedores</p>
+                    <a href="{% url 'compra_crear' %}" class="btn btn-slate-primary btn-lg">
+                        <i class="fas fa-plus"></i> Crear Primera Compra
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas cancelar esta orden de compra?</p>
+                <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-slate" data-bs-dismiss="modal">Cerrar</button>
+                <form id="formEliminar" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Cancelar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function confirmarEliminacion(idCompra) {
+        const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+        const form = document.getElementById('formEliminar');
+        form.action = `/compras/${idCompra}/eliminar/`;
+        modal.show();
+    }
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .compras-header {
+        background: var(--slate-neutral);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
+    }
+
+    .compras-header h2 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-card .icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--slate-primary);
+    }
+
+    .stats-card .label {
+        color: var(--slate-neutral);
+        font-weight: 500;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 20px;
+    }
+
+    .filter-card h5 {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border-bottom: 2px solid var(--slate-light);
+        background-color: var(--slate-primary);
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--slate-tertiary);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .table-compras {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-compras thead {
+        background: var(--slate-secondary);
+        color: white;
+    }
+
+    .table-compras thead th {
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .table-compras tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-compras tbody tr:hover {
+        background: var(--slate-light);
+    }
+
+    .table-compras tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .badge-estado {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .badge-pendiente {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-confirmada {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-cancelada {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-ver {
+        background: var(--slate-primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-ver:hover {
+        background: var(--slate-secondary);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-eliminar-compra {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-eliminar-compra:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: var(--slate-neutral);
+        opacity: 0.5;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h4 {
+        color: var(--slate-primary);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: var(--slate-neutral);
+        margin-bottom: 2rem;
+    }
+
+    .compras-content-wrapper {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--slate-light);
+    }
+
+    .content-header h5 {
+        color: white;
+        font-weight: 700;
+        margin: 0;
+        padding: 1rem;
+        background-color: var(--slate-primary);
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .btn-filtrar {
+        background: var(--slate-primary);
+        border: none;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-filtrar:hover {
+        background: var(--slate-secondary);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-limpiar {
+        background: white;
+        border: 2px solid var(--slate-primary);
+        color: var(--slate-primary);
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .btn-limpiar:hover {
+        background: var(--slate-light);
+        border-color: var(--slate-secondary);
+        color: var(--slate-secondary);
+    }
+
+    @media (max-width: 991px) {
+        .filter-card {
+            position: relative;
+            top: 0;
+            margin-bottom: 2rem;
+        }
+    }
+    /* Botón principal */
+    .btn-create {
+        background: white;
+        color: var(--slate-primary);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        background: var(--slate-light);
+        color: var(--slate-primary);
+    }
+
+    .btn-create i {
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}

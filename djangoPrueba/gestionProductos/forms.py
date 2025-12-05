@@ -6,7 +6,7 @@ class ProductoForm(forms.ModelForm):
         model = Productos
         fields = [
             'codProducto', 'nombre', 'descripcion', 'imgUrl',
-            'precioUnitario', 'idMarca', 'idCategoria', 'stock', 'activo'
+            'precioUnitario', 'idMarca', 'idCategoria', 'stock', 'activo', 'iva'
         ]
         labels = {
             'codProducto': 'Código de Producto',
@@ -17,7 +17,8 @@ class ProductoForm(forms.ModelForm):
             'idMarca': 'Marca',
             'idCategoria': 'Categoría',
             'stock': 'Stock',
-            'activo': 'Activo'
+            'activo': 'Activo',
+            'iva' : 'IVA'
         }
         widgets = {
             'codProducto': forms.TextInput(attrs={
@@ -54,6 +55,9 @@ class ProductoForm(forms.ModelForm):
             }),
             'activo': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
+            }),
+            'iva': forms.Select(attrs={
+                'class': 'form-control'
             })
         }
 
@@ -71,6 +75,12 @@ class ProductoForm(forms.ModelForm):
         if precio <= 0:
             raise forms.ValidationError('El precio debe ser mayor a 0')
         return precio
+    
+    def clean_iva(self):
+        ivaProducto = self.cleaned_data.get('iva')
+        if ivaProducto is None or ivaProducto == "":
+            raise forms.ValidationError('Debe establecer la categoría de IVA para el producto')
+        return float(ivaProducto)
 
     # -------------------------
     # CONFIGURAR VISIBILIDAD DE "activo"

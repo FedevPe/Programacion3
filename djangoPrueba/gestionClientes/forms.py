@@ -104,6 +104,6 @@ class ClienteForm(forms.ModelForm):
         telefono = self.cleaned_data.get('telefono')
 
         if not re.match(r'^\d{7,15}$', telefono):
-            raise forms.ValidationError("El teléfono debe contener entre 7 y 15 dígitos y puede incluir un al inicio.")
+            raise forms.ValidationError("El teléfono debe contener entre 7 y 15 dígitos.")
 
         return telefono

@@ -10,19 +10,18 @@ class Proveedor(models.Model):
     cuit = models.CharField(max_length=100)
     telefono = models.CharField(max_length=20)
     email = models.EmailField()
+    activo = models.BooleanField(default=True)
 
     class Meta:
         verbose_name='Proveedor'
         verbose_name_plural='Proveedores'
     
     def __str__(self):
-        return self.nombre
+        return self.razon_social
     
 class ProductoProveedor(models.Model):
     producto = models.ForeignKey(Productos, on_delete=models.CASCADE)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    precio = models.DecimalField(max_digits=9, decimal_places=2)
-    fecha_acuerdo = models.DateField()
 
     class Meta:
         unique_together = ('producto', 'proveedor')

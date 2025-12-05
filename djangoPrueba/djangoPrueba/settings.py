@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'gestionClientes',
     'gestionProveedores',
     'gestionVentas',
-    'gestionUsuarios'
+    'gestionUsuarios',
+    'gestionCompras'
 ]
 
 MIDDLEWARE = [

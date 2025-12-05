@@ -47,8 +47,10 @@ def producto_editar(request, id):
 @login_required
 def producto_detalle(request, id):
     # Recupera el objeto Productos con el id proporcionado, o lanza un 404 si no existe.
-    producto = get_object_or_404(Productos.objects.select_related('idMarca', 'idCategoria'), pk=id)
-    
+    producto = get_object_or_404(Productos.objects.select_related('idMarca', 'idCategoria'), pk=id)    
+    producto.precio_sin_iva = producto.precioUnitario / (1 + (producto.iva / 100))
+    producto.precio_con_iva = producto.precioUnitario
+
     # Renderiza la plantilla de detalle, pasando el objeto producto.
     return render(request, "productos/detalle.html", {"producto": producto})
 

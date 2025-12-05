@@ -1,0 +1,477 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Compra #{{ compra.idCompra }} - Sistema de Gestión{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detalle-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--slate-neutral);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-estado-grande {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-pendiente {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-confirmada {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-cancelada {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+        height: 100%;
+    }
+
+    .info-card h5 {
+        color: var(--slate-primary);
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--slate-light);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--slate-tertiary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-value {
+        color: var(--slate-primary);
+        font-weight: 500;
+    }
+
+    .tabla-detalle {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+    }
+
+    .tabla-detalle table {
+        margin-bottom: 0;
+    }
+
+    .tabla-detalle thead {
+        background: var(--slate-secondary);
+        color: white;
+    }
+
+    .tabla-detalle thead th {
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .tabla-detalle tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .tabla-detalle tbody tr:hover {
+        background: var(--slate-light);
+    }
+
+    .tabla-detalle tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .totales-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+    }
+
+    .totales-section {
+        background: var(--slate-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #cbd5e1;
+    }
+
+    .total-row:last-child {
+        border-bottom: none;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--slate-primary);
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 2px solid var(--slate-primary);
+    }
+
+    .total-label {
+        font-weight: 600;
+        color: var(--slate-tertiary);
+    }
+
+    .total-value {
+        font-weight: 700;
+        color: var(--slate-primary);
+        font-size: 1.1rem;
+    }
+
+    .acciones-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+    }
+
+    .observaciones-card {
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .observaciones-card h6 {
+        color: #92400e;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .observaciones-card p {
+        color: #78350f;
+        margin: 0;
+    }
+
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .page-header {
+            background: #64748b !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid detalle-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2>
+                    <i class="fas fa-file-invoice"></i> 
+                    Compra #{{ compra.idCompra }}
+                </h2>
+                <p class="mb-0 mt-2">Detalle completo de la orden de compra</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge-estado-grande 
+                    {% if compra.estado == 'PENDIENTE' %}badge-pendiente
+                    {% elif compra.estado == 'CONFIRMADA' %}badge-confirmada
+                    {% else %}badge-cancelada{% endif %}">
+                    {% if compra.estado == 'PENDIENTE' %}
+                        <i class="fas fa-clock"></i> Pendiente
+                    {% elif compra.estado == 'CONFIRMADA' %}
+                        <i class="fas fa-check-circle"></i> Confirmada
+                    {% else %}
+                        <i class="fas fa-times-circle"></i> Cancelada
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="acciones-card mb-4 no-print">
+        <div class="d-flex justify-content-between flex-wrap gap-2">
+            <a href="{% url 'compras_list' %}" class="btn btn-outline-slate btn-lg">
+                <i class="fas fa-arrow-left"></i> Volver a la Lista
+            </a>
+            
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-slate-secondary btn-lg">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                
+                {% if compra.estado == 'PENDIENTE' %}
+                <button type="button" class="btn btn-slate-success btn-lg" 
+                        data-bs-toggle="modal" data-bs-target="#modalConfirmar">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+                
+                <button type="button" class="btn btn-danger btn-lg" 
+                        data-bs-toggle="modal" data-bs-target="#modalCancelar">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Columna Izquierda: Información General -->
+        <div class="col-lg-4 mb-4">
+            <!-- Información de la Compra y Proveedor -->
+            <div class="info-card">
+                <h5><i class="fas fa-info-circle"></i> Información General</h5>
+                
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-hashtag"></i> N° Compra:
+                    </span>
+                    <span class="info-value">#{{ compra.idCompra }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-calendar-alt"></i> Fecha:
+                    </span>
+                    <span class="info-value">{{ compra.fecha_compra|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-credit-card"></i> Método Pago:
+                    </span>
+                    <span class="info-value">
+                        <span class="badge bg-secondary">{{ compra.get_metodo_pago_display }}</span>
+                    </span>
+                </div>
+
+                <!-- Separador para Proveedor -->
+                <h5 class="mt-4"><i class="fas fa-truck"></i> Proveedor</h5>
+                
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-building"></i> Nombre:
+                    </span>
+                    <span class="info-value">{{ compra.proveedor.razon_social }}</span>
+                </div>
+                
+                {% if compra.proveedor.telefono %}
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-phone"></i> Teléfono:
+                    </span>
+                    <span class="info-value">{{ compra.proveedor.telefono }}</span>
+                </div>
+                {% endif %}
+                
+                {% if compra.proveedor.email %}
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-envelope"></i> Email:
+                    </span>
+                    <span class="info-value">{{ compra.proveedor.email }}</span>
+                </div>
+                {% endif %}
+                
+                {% if compra.proveedor.direccion %}
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-map-marker-alt"></i> Dirección:
+                    </span>
+                    <span class="info-value">{{ compra.proveedor.direccion }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if compra.observaciones %}
+            <!-- Observaciones -->
+            <div class="observaciones-card">
+                <h6><i class="fas fa-comment-alt"></i> Observaciones</h6>
+                <p>{{ compra.observaciones }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Columna Derecha: Productos y Totales -->
+        <div class="col-lg-8">
+            <!-- Tabla de Productos -->
+            <div class="tabla-detalle mb-4">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unit.</th>
+                            <th>IVA %</th>
+                            <th>Subtotal</th>
+                            <th>IVA Monto</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detalle in compra.detalles.all %}
+                        <tr>
+                            <td>
+                                <strong>{{ detalle.producto.nombre }}</strong>
+                                {% if detalle.producto.marca %}
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-tag"></i> {{ detalle.producto.marca.nombre }}
+                                </small>
+                                {% endif %}
+                                {% if detalle.observacion %}
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-comment"></i> {{ detalle.observacion }}
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ detalle.cantidad }}</strong></td>
+                            <td>${{ detalle.precio_unitario|floatformat:2 }}</td>
+                            <td>{{ detalle.iva_porcentaje|floatformat:2 }}%</td>
+                            <td>${{ detalle.subtotal|floatformat:2 }}</td>
+                            <td>${{ detalle.iva_monto|floatformat:2 }}</td>
+                            <td><strong class="text-slate-primary">${{ detalle.subtotal_con_iva|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totales -->
+            <div class="totales-card">
+                <div class="totales-section">
+                    <div class="total-row">
+                        <span class="total-label">Subtotal (sin IVA):</span>
+                        <span class="total-value">${{ compra.total|floatformat:2 }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">IVA Total:</span>
+                        <span class="total-value">${{ compra.iva_total|floatformat:2 }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">TOTAL:</span>
+                        <span class="total-value">${{ compra.total_con_iva|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Compra -->
+<div class="modal fade" id="modalConfirmar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i> Confirmar Compra
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas <strong>confirmar</strong> esta compra?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Al confirmar, el stock de los productos se actualizará automáticamente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-slate" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'compra_cambiar_estado' compra.idCompra %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="estado" value="CONFIRMADA">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Confirmar Compra
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar Compra -->
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-times-circle"></i> Cancelar Compra
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas <strong>cancelar</strong> esta compra?</p>                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-slate" data-bs-dismiss="modal">Cerrar</button>
+                <form method="post" action="{% url 'compra_cambiar_estado' compra.idCompra %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="estado" value="CANCELADA">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Cancelar Compra
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -32,7 +32,7 @@
                     <!-- Badge de Estado en la imagen -->
                     <div class="position-absolute top-0 end-0 m-3">
                         {% if producto.activo %}
-                            <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">
+                            <span class="badge bg-slate-success px-3 py-2 rounded-pill shadow-sm">
                                 <i class="fas fa-check-circle me-1"></i> Activo
                             </span>
                         {% else %}
@@ -58,7 +58,7 @@
                             </div>
                             <div class="ms-3">
                                 <a href="{% url 'producto_editar' producto.idProducto %}" 
-                                   class="btn btn-success rounded-pill px-4">
+                                   class="btn btn-slate-success rounded-pill px-4">
                                     <i class="fas fa-edit me-2"></i>Editar
                                 </a>
                             </div>
@@ -69,15 +69,18 @@
                             <div class="d-flex align-items-center">
                                 <div>
                                     <p class="text-muted small mb-1">Precio Unitario</p>
-                                    <h2 class="text-success fw-bold mb-0">
+                                    <h2 class="text-slate-accent fw-bold mb-0">
                                         ${{ producto.precioUnitario|floatformat:2 }}
                                     </h2>
+                                    <p class="text-muted mb-0" style="font-size: 13px;">
+                                        ${{ producto.precio_sin_iva|floatformat:2 }} sin IVA
+                                    </p>
                                 </div>
                                 <div class="ms-auto">
                                     <div class="text-end">
                                         <p class="text-muted small mb-1">Stock Disponible</p>
                                         <h4 class="mb-0 fw-bold">
-                                            <span class="badge {% if producto.stock > 10 %}bg-success{% elif producto.stock > 0 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                            <span class="badge {% if producto.stock > 10 %}bg-slate-success{% elif producto.stock > 0 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
                                                 {{ producto.stock }} unidades
                                             </span>
                                         </h4>
@@ -110,7 +113,7 @@
                         {% if producto.descripcion %}
                         <div class="mb-4">
                             <h5 class="fw-bold mb-3">
-                                <i class="fas fa-info-circle me-2 text-primary"></i>Descripción
+                                <i class="fas fa-info-circle me-2 text-slate-neutral"></i>Descripción
                             </h5>
                             <div class="text-muted" style="line-height: 1.7;">
                                 {{ producto.descripcion|linebreaks }}
@@ -124,7 +127,7 @@
                             <div class="row g-2 small">
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-calendar-plus text-primary me-2"></i>
+                                        <i class="fas fa-calendar-plus text-slate-neutral me-2"></i>
                                         <div>
                                             <p class="mb-0 text-muted">Fecha de Creación</p>
                                             <p class="mb-0 fw-semibold">{{ producto.fecha_creacion|date:"d/m/Y H:i" }}</p>
@@ -156,13 +159,7 @@
     </div>
 </div>
 
-<style>
-    /* Estilos adicionales para mejorar la experiencia */
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: "›";
-        font-size: 1.2rem;
-    }
-    
+<style>    
     .card {
         transition: box-shadow 0.3s ease;
     }

@@ -17,6 +17,11 @@ def clientes_list(request):
     clientes = Cliente.objects.all().order_by('-fecha_registro')
     return render(request, "clientes/list.html", {"clientes": clientes})
 
+@login_required
+def cliente_detalle(request, id):
+    """Muestra los datos de un cliente"""
+    cliente = get_object_or_404(Cliente, idCliente=id)
+    return render(request, "clientes/detalle.html", {"cliente": cliente})
 
 @login_required
 def cliente_crear(request):

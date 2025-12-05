@@ -9,13 +9,79 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Paleta de colores monocromática basada en #0f172a */
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-bg: #ecf0f1;
-            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            --card-hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            --slate-primary: #0f172a;      /* Color principal - Slate 900 */
+            --slate-secondary: #1e293b;    /* Slate 800 */
+            --slate-tertiary: #334155;     /* Slate 700 */
+            --slate-accent: #475569;       /* Slate 600 - Para acentos */
+            --slate-light: #f1f5f9;        /* Slate 100 - Fondos claros */
+            --slate-success: #10b981;      /* Verde para éxito - compatible */
+            --slate-neutral: #64748b;      /* Slate 500 - Para estados neutrales */
+        }
+
+        /* Clases de color personalizadas */
+        .text-slate-primary { color: var(--slate-primary) !important; }
+        .text-slate-secondary { color: var(--slate-secondary) !important; }
+        .text-slate-tertiary { color: var(--slate-tertiary) !important; }
+        .text-slate-accent { color: var(--slate-accent) !important; }
+        .text-slate-light { color: var(--slate-light) !important; }
+        .text-slate-neutral { color: var(--slate-neutral) !important; }
+        
+        .bg-slate-primary { background-color: var(--slate-primary) !important; }
+        .bg-slate-secondary { background-color: var(--slate-secondary) !important; }
+        .bg-slate-tertiary { background-color: var(--slate-tertiary) !important; }
+        .bg-slate-accent { background-color: var(--slate-accent) !important; }
+        .bg-slate-light { background-color: var(--slate-light) !important; }
+        .bg-slate-success { background-color: var(--slate-success) !important; }
+        .bg-slate-neutral { background-color: var(--slate-neutral) !important; }
+
+        /* Botones personalizados */
+        .btn-slate-primary {
+            background-color: var(--slate-primary);
+            border-color: var(--slate-primary);
+            color: white;
+        }
+
+        .btn-slate-primary:hover {
+            background-color: var(--slate-secondary);
+            border-color: var(--slate-secondary);
+            color: white;
+        }
+
+        .btn-slate-secondary {
+            background-color: var(--slate-secondary);
+            border-color: var(--slate-secondary);
+            color: white;
+        }
+
+        .btn-slate-secondary:hover {
+            background-color: var(--slate-tertiary);
+            border-color: var(--slate-tertiary);
+            color: white;
+        }
+
+        .btn-outline-slate {
+            border-color: var(--slate-primary);
+            color: var(--slate-primary);
+        }
+
+        .btn-outline-slate:hover {
+            background-color: var(--slate-primary);
+            border-color: var(--slate-primary);
+            color: white;
+        }
+
+        .btn-slate-disabled {
+            background-color: var(--slate-neutral);
+            border-color: var(--slate-neutral);
+            color: white;
+        }
+
+        .btn-slate-success {
+            background-color: var(--slate-success);
+            border-color: var(--slate-success);
+            color: white;
         }
 
         * {
@@ -38,7 +104,7 @@
 
         /* Navbar mejorada */
         .navbar {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            background: #0f172a !important;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 1rem 0;
         }
@@ -55,17 +121,11 @@
 
         .navbar-brand:hover {
             transform: translateY(-2px);
-            color: #3498db !important;
+            color: white !important;
         }
 
         .navbar-brand i {
             font-size: 1.8rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .nav-link {
@@ -120,7 +180,7 @@
         }
 
         .dropdown-item:hover {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: #0f172a;
             color: #fff !important;
             transform: translateX(5px);
         }
@@ -143,14 +203,9 @@
             overflow: hidden;
         }
 
-        .card:hover {
-            box-shadow: var(--card-hover-shadow);
-            transform: translateY(-5px);
-        }
-
         /* Footer mejorado */
         footer {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: #0f172a;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
             padding: 1.5rem 0;
         }
@@ -255,17 +310,26 @@
                             </li>
                         </ul>
                     </li>
-                    
+                    <li class="nav-item">
+                        <a class="nav-link" >
+                            <i class="fas fa-truck"></i> Proveedores
+                        </a>
+                    </li>                    
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'clientes_list' %}">
                             <i class="fas fa-users"></i> Clientes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'compras_list' %}">
+                            <i class="fas fa-shopping-cart"></i> Compras
                         </a>
                     </li>
                 </ul>
                 
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
+                        <li class="nav-item me-3">
                             <span class="nav-link">
                                 <i class="fas fa-user-circle"></i> {{ user.username }}
                             </span>

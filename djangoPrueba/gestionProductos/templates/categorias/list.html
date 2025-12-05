@@ -1,77 +1,519 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Lista de Categorías{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-list"></i> Gestión de Categorías</h2>
-        <div>
-            <a href="{% url 'productos_list' %}" class="btn btn-secondary me-2">
-                <i class="fas fa-arrow-left"></i> Volver a Productos
-            </a>
-            <a href="{% url 'categoria_crear' %}" class="btn btn-success">
-                <i class="fas fa-plus"></i> Nueva Categoría
-            </a>
+<div class="container mt-4 mb-5">
+    <!-- Header -->
+    <div class="page-header bg-slate-neutral">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h2 class="text-slate-light">
+                <i class="fas fa-list"></i>
+                <span>Gestión de Categorías</span>
+            </h2>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'productos_list' %}" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Volver a Productos
+                </a>
+                <a type="button" data-bs-toggle="modal" data-bs-target="#modalCategoria" title="Crear nueva categoría" class="btn btn-create">
+                    <i class="fas fa-plus"></i> Nueva Categoría
+                </a>
+            </div>
         </div>
     </div>
 
+    <!-- Mensajes -->
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
         {% endfor %}
     {% endif %}
 
-    <div class="card shadow">
-        <div class="card-body">
-
+    <!-- Card Principal -->
+    <div class="products-card card">
+        <div class="card-body p-0">
             {% if categorias %}
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Descripción</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for categoria in categorias %}
-                            <tr>
-                                <td>{{ categoria.idCategoria }}</td>
-                                <td><strong>{{ categoria.descripcion }}</strong></td>
-                                <td class="text-center">
-
-                                    <!-- <a href="#" class="btn btn-sm btn-warning disabled">
-                                        <i class="fas fa-box"></i>
-                                        Productos (no implementado)
-                                    </a> -->
-
-                                    <a href="{% url 'categoria_editar' categoria.idCategoria %}" class="btn btn-sm btn-success">
-                                        <i class="fas fa-edit"></i> Editar
+            <div class="table-responsive">
+                <table class="table border-light table-hover mb-0">
+                    <thead class="bg-slate-primary">
+                        <tr>
+                            <th class="text-slate-primary">ID</th>
+                            <th class="text-slate-primary">Descripción</th>
+                            <th class="text-center text-slate-primary">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                        <tr>
+                            <td>
+                                <span class="badge-id">{{ categoria.idCategoria }}</span>
+                            </td>
+                            <td>
+                                <i class="fas fa-folder me-2" style="color: var(--slate-accent);"></i>
+                                <strong>{{ categoria.descripcion }}</strong>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'categoria_editar' categoria.idCategoria %}" 
+                                       class="btn btn-action btn-edit" 
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
                                     </a>
-
-                                    <a href="{% url 'categoria_eliminar' categoria.idCategoria %}" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i> Eliminar
+                                    <a href="{% url 'categoria_eliminar' categoria.idCategoria %}" 
+                                       class="btn btn-action btn-delete" 
+                                       title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i>
                                     </a>
-
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle"></i> No hay categorías registradas.
-                    <a href="{% url 'categoria_crear' %}" class="alert-link">Crear categoría</a>
+            <div class="empty-state">
+                <i class="fas fa-list"></i>
+                <h4>No hay categorías registradas</h4>
+                <p class="mb-0">Comienza agregando tu primera categoría al sistema</p>
+                <div class="mt-3">
+                    <a href="{% url 'categoria_crear_ajax' %}" class="btn btn-empty-state">
+                        <i class="fas fa-plus-circle"></i> Crear Primera Categoría
+                    </a>
                 </div>
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- ============================================================
+     MODAL CREAR CATEGORÍA
+=============================================================== -->
+<div class="modal fade" id="modalCategoria" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-slate-neutral text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-folder me-2"></i>
+                    Crear Nueva Categoría
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label for="categoria_descripcion" class="form-label fw-semibold">Descripción de la Categoría</label>
+                    <input id="categoria_descripcion" type="text" class="form-control form-control-lg" placeholder="Nombre de la categoría">
+                </div>
+                <p id="categoria_error" class="text-danger mb-0"></p>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button class="btn btn-slate-primary" id="btnGuardarCategoria">
+                    <i class="fas fa-check me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<script>
+ document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("btnGuardarCategoria");
+    if (!btn) {
+        console.error("No se encontró #btnGuardarCategoria");
+        return;
+    }
+
+    btn.addEventListener("click", async function () {
+        try {
+            btn.disabled = true;
+            const descripcionInput = document.getElementById("categoria_descripcion");
+            const errorEl = document.getElementById("categoria_error");
+            const modalEl = document.getElementById("modalCategoria");
+
+            const descripcion = descripcionInput ? descripcionInput.value.trim() : "";
+
+            if (!descripcion) {
+                if (errorEl) errorEl.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Por favor ingrese una descripción';
+                btn.disabled = false;
+                return;
+            }
+
+            // Enviar
+            const body = "descripcion=" + encodeURIComponent(descripcion);
+
+            const response = await fetch("{% url 'categoria_crear_ajax' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: body,
+                credentials: "same-origin"
+            });
+
+            if (!response.ok) {
+                // Mostrar error genérico
+                console.error("Fetch error, status:", response.status);
+                if (errorEl) errorEl.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Error al crear la categoría (status ' + response.status + ')';
+                btn.disabled = false;
+                return;
+            }
+
+            // Intentar parsear JSON
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonErr) {
+                console.error("No se pudo parsear JSON:", jsonErr);
+                if (errorEl) errorEl.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Respuesta inválida del servidor';
+                btn.disabled = false;
+                return;
+            }
+
+            if (data.error) {
+                if (errorEl) errorEl.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>' + data.error;
+                btn.disabled = false;
+                return;
+            }
+
+            // Insertar option en el select (si existe)
+            const select = document.getElementById("id_idCategoria");
+            if (select) {
+                const opt = document.createElement("option");
+                opt.value = data.id;
+                opt.text = data.descripcion;
+                // añadir al final y seleccionarlo
+                select.appendChild(opt);
+                select.value = data.id;
+            } else {
+                console.warn("No se encontró select #id_idCategoria -- la página será recargada para mostrar el nuevo registro.");
+            }
+
+            // Limpiar formulario / errores
+            if (descripcionInput) descripcionInput.value = "";
+            if (errorEl) errorEl.innerText = "";
+
+            // Notificación (usa tu función existente si la tenés)
+            try { showNotification("Categoría creada exitosamente", "success"); } catch (_) { console.log("showNotification no está definida."); }
+
+            // Cerrar modal — obtener instancia de bootstrap o crear una
+            if (modalEl) {
+                let modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+
+                // Agregar listener para recargar tras cierre (una sola vez)
+                const onHidden = function () {
+                    // eliminamos el listener para que no se dispare más veces
+                    modalEl.removeEventListener("hidden.bs.modal", onHidden);
+                    // recargar la página para mostrar último registro
+                    window.location.reload();
+                };
+                modalEl.addEventListener("hidden.bs.modal", onHidden);
+
+                // Cerrar modal (esto disparará el evento 'hidden.bs.modal')
+                modalInstance.hide();
+
+                // Fallback: si por alguna razón no llega el evento, forzar recarga en 1s
+                setTimeout(() => {
+                    // Si la página sigue en la misma URL (no recargada) forzamos reload
+                    // Para evitar doble reload comprobamos si modal está todavía visible
+                    if (document.body.contains(modalEl)) {
+                        // comprobar si modal tiene la clase show (bootstrap)
+                        if (!modalEl.classList.contains("show")) return; // ya cerrado y reload en marcha
+                        window.location.reload();
+                    } else {
+                        window.location.reload();
+                    }
+                }, 1200);
+            } else {
+                // Si no hay modal en DOM, recargamos directamente
+                window.location.reload();
+            }
+
+        } catch (err) {
+            console.error("Error en btnGuardarCategoria:", err);
+            const errorEl = document.getElementById("categoria_error");
+            if (errorEl) errorEl.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Error inesperado. Revisa la consola.';
+            btn.disabled = false;
+        }
+    });
+});
+
+</script>
+
+<style>
+    /* Header de página */
+    .page-header {
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h2 i {
+        font-size: 2rem;
+        opacity: 0.9;
+    }
+
+    /* Botones principales */
+    .btn-create {
+        background: white;
+        color: var(--slate-primary);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        background: var(--slate-light);
+        color: var(--slate-primary);
+    }
+
+    .btn-create i {
+        margin-right: 0.5rem;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-back i {
+        margin-right: 0.5rem;
+    }
+
+    /* Alertas mejoradas */
+    .alert {
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        animation: slideInDown 0.4s ease;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Card principal */
+    .products-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
+
+    /* Tabla mejorada */
+    .table {
+        margin: 0;
+    }
+
+    .table thead th {
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border: none;
+        vertical-align: middle;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--slate-light);
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--slate-secondary);
+        font-weight: 500;
+    }
+
+    /* Badges personalizados */
+    .badge-id {
+        background-color: var(--slate-light);
+        color: var(--slate-primary);
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Botones de acción */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        border: none;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-edit {
+        background-color: var(--slate-primary);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: var(--slate-secondary);
+        color: white;
+    }
+
+    .btn-delete {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #b91c1c;
+        color: white;
+    }
+
+    /* Estado vacío */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 1rem;
+        border: 2px dashed var(--slate-neutral);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--slate-neutral);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        color: var(--slate-secondary);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: var(--slate-neutral);
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-empty-state {
+        background-color: var(--slate-primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.75rem;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-empty-state:hover {
+        background-color: var(--slate-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+        color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .table thead th,
+        .table tbody td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+
+    /* Animación de carga */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .products-card {
+        animation: fadeIn 0.5s ease;
+    }
+</style>
 {% endblock %}

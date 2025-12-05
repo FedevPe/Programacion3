@@ -17,8 +17,7 @@ class ProveedorAdmin(admin.ModelAdmin):
 # ====================
 @admin.register(ProductoProveedor)
 class ProductoProveedorAdmin(admin.ModelAdmin):
-    list_display = ('producto', 'proveedor', 'precio', 'fecha_acuerdo')
-    list_filter = ('proveedor', 'fecha_acuerdo')
-    search_fields = ('producto__nombre', 'proveedor__nombre')
-    ordering = ('-fecha_acuerdo',)
+    list_display = ('producto', 'proveedor')
+    list_filter = ('proveedor',)
+    search_fields = ('producto__nombre', 'proveedor__razon_social')
     autocomplete_fields = ['producto', 'proveedor']

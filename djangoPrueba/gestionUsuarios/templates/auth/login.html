@@ -1,0 +1,391 @@
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Paleta de colores monocromática basada en #0f172a */
+        :root {
+            --slate-primary: #0f172a;      /* Color principal - Slate 900 */
+            --slate-secondary: #1e293b;    /* Slate 800 */
+            --slate-tertiary: #334155;     /* Slate 700 */
+            --slate-accent: #475569;       /* Slate 600 - Para acentos */
+            --slate-light: #f1f5f9;        /* Slate 100 - Fondos claros */
+            --slate-success: #10b981;      /* Verde para éxito - compatible */
+            --slate-neutral: #64748b;      /* Slate 500 - Para estados neutrales */
+        }
+
+        /* Clases de color personalizadas */
+        .text-slate-primary { color: var(--slate-primary) !important; }
+        .text-slate-secondary { color: var(--slate-secondary) !important; }
+        .text-slate-tertiary { color: var(--slate-tertiary) !important; }
+        .text-slate-accent { color: var(--slate-accent) !important; }
+        .text-slate-light { color: var(--slate-light) !important; }
+        .text-slate-neutral { color: var(--slate-neutral) !important; }
+        
+        .bg-slate-primary { background-color: var(--slate-primary) !important; }
+        .bg-slate-secondary { background-color: var(--slate-secondary) !important; }
+        .bg-slate-tertiary { background-color: var(--slate-tertiary) !important; }
+        .bg-slate-accent { background-color: var(--slate-accent) !important; }
+        .bg-slate-light { background-color: var(--slate-light) !important; }
+        .bg-slate-success { background-color: var(--slate-success) !important; }
+        .bg-slate-neutral { background-color: var(--slate-neutral) !important; }
+
+        /* Botones personalizados */
+        .btn-slate-primary {
+            background-color: var(--slate-primary);
+            border-color: var(--slate-primary);
+            color: white;
+        }
+
+        .btn-slate-primary:hover {
+            background-color: var(--slate-secondary);
+            border-color: var(--slate-secondary);
+            color: white;
+        }
+
+        .btn-slate-secondary {
+            background-color: var(--slate-secondary);
+            border-color: var(--slate-secondary);
+            color: white;
+        }
+
+        .btn-slate-secondary:hover {
+            background-color: var(--slate-tertiary);
+            border-color: var(--slate-tertiary);
+            color: white;
+        }
+
+        .btn-outline-slate {
+            border-color: var(--slate-primary);
+            color: var(--slate-primary);
+        }
+
+        .btn-outline-slate:hover {
+            background-color: var(--slate-primary);
+            border-color: var(--slate-primary);
+            color: white;
+        }
+
+        .btn-slate-disabled {
+            background-color: var(--slate-neutral);
+            border-color: var(--slate-neutral);
+            color: white;
+        }
+
+        .btn-slate-success {
+            background-color: var(--slate-success);
+            border-color: var(--slate-success);
+            color: white;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <!-- Logo/Header -->
+        <div class="login-header">
+            <div class="login-icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <h2>Bienvenido</h2>
+            <p>Inicia sesión para continuar</p>
+        </div>
+
+        <!-- Mensajes -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ message }}
+                <button class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Formulario -->
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    <i class="fas fa-user"></i> Usuario
+                </label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Ingresa tu usuario"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock"></i> Contraseña
+                </label>
+                <input 
+                    type="password" 
+                    class="form-control" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Ingresa tu contraseña"
+                    required
+                >
+            </div>
+
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="remember">
+                <label class="form-check-label" for="remember">
+                    Recordarme
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="login-footer">
+            <a href="#" class="link-forgot">¿Olvidaste tu contraseña?</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--slate-primary) 0%, var(--slate-secondary) 100%);
+        padding: 2rem;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+        padding: 3rem;
+        width: 100%;
+        max-width: 450px;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .login-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--slate-primary) 0%, var(--slate-secondary) 100%);
+        border-radius: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.2);
+    }
+
+    .login-icon i {
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    .login-header h2 {
+        color: var(--slate-primary);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.875rem;
+    }
+
+    .login-header p {
+        color: var(--slate-neutral);
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .login-form {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        color: var(--slate-secondary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-label i {
+        color: var(--slate-accent);
+        font-size: 1rem;
+    }
+
+    .form-control {
+        padding: 0.875rem 1.25rem;
+        border: 2px solid var(--slate-light);
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus {
+        border-color: var(--slate-primary);
+        box-shadow: 0 0 0 0.2rem rgba(51, 65, 85, 0.1);
+        background-color: white;
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input {
+        width: 1.125rem;
+        height: 1.125rem;
+        cursor: pointer;
+        border: 2px solid var(--slate-neutral);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--slate-primary);
+        border-color: var(--slate-primary);
+    }
+
+    .form-check-label {
+        color: var(--slate-secondary);
+        cursor: pointer;
+        font-size: 0.95rem;
+        user-select: none;
+    }
+
+    .btn-login {
+        width: 100%;
+        background: linear-gradient(135deg, var(--slate-primary) 0%, var(--slate-secondary) 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: none;
+        font-size: 1.05rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
+        color: white;
+    }
+
+    .btn-login:active {
+        transform: translateY(0);
+    }
+
+    .login-footer {
+        text-align: center;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--slate-light);
+    }
+
+    .link-forgot {
+        color: var(--slate-accent);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .link-forgot:hover {
+        color: var(--slate-primary);
+        text-decoration: underline;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.4s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .login-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .login-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .login-icon {
+            width: 70px;
+            height: 70px;
+        }
+
+        .login-icon i {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}

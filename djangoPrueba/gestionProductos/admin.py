@@ -34,12 +34,15 @@ class CategoriaAdmin(admin.ModelAdmin):
 # ====================
 @admin.register(Productos)
 class ProductosAdmin(admin.ModelAdmin):
-    list_display = ('codProducto', 'nombre', 'idMarca', 'idCategoria', 'precioUnitario', 'stock', 'activo')
+    list_display = (
+        'codProducto', 'nombre', 'idMarca', 'idCategoria',
+        'precioUnitario', 'iva', 'stock', 'activo'
+    )
     list_filter = ('activo', 'idMarca', 'idCategoria', 'fecha_creacion')
     search_fields = ('codProducto', 'nombre', 'descripcion')
     ordering = ('-fecha_creacion',)
     list_editable = ('stock', 'activo')
-    
+
     fieldsets = (
         ('Información Básica', {
             'fields': ('codProducto', 'nombre', 'descripcion')
@@ -48,7 +51,7 @@ class ProductosAdmin(admin.ModelAdmin):
             'fields': ('idMarca', 'idCategoria')
         }),
         ('Precios e Inventario', {
-            'fields': ('precioUnitario', 'stock', 'activo')
+            'fields': ('precioUnitario', 'iva', 'stock', 'activo')
         }),
         ('Imagen', {
             'fields': ('imgUrl',)
@@ -58,7 +61,7 @@ class ProductosAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
     readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
 
 # ====================

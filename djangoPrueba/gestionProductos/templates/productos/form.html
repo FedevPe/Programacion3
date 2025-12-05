@@ -116,6 +116,21 @@
                                 {% endif %}
                             </div>
 
+                            <!-- IVA -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-percent text-muted me-1"></i>
+                                    {{ form.iva.label }}
+                                </label>
+                                {{ form.iva }}
+                                {% if form.iva.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {{ form.iva.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
                             <!-- Stock -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">
@@ -214,7 +229,7 @@
             <div class="card-body p-4">
                 <div class="d-flex justify-content-end align-items-center">
                     <div>
-                        <button type="submit" class="btn btn-success btn-lg px-5">
+                        <button type="submit" class="btn btn-slate-primary btn-lg px-5">
                             <i class="fas fa-save me-2"></i>
                             Guardar
                         </button>
@@ -236,7 +251,7 @@
 <div class="modal fade" id="modalMarca" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white">
+            <div class="modal-header bg-slate-neutral text-white">
                 <h5 class="modal-title">
                     <i class="fas fa-copyright me-2"></i>
                     Crear Nueva Marca
@@ -253,10 +268,10 @@
             </div>
 
             <div class="modal-footer bg-light">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>Cancelar
                 </button>
-                <button class="btn btn-success" id="btnGuardarMarca">
+                <button class="btn btn-slate-primary" id="btnGuardarMarca">
                     <i class="fas fa-check me-2"></i>Guardar
                 </button>
             </div>
@@ -271,7 +286,7 @@
 <div class="modal fade" id="modalCategoria" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white">
+            <div class="modal-header bg-slate-neutral text-white">
                 <h5 class="modal-title">
                     <i class="fas fa-folder me-2"></i>
                     Crear Nueva Categoría
@@ -288,10 +303,10 @@
             </div>
 
             <div class="modal-footer bg-light">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>Cancelar
                 </button>
-                <button class="btn btn-success" id="btnGuardarCategoria">
+                <button class="btn btn-slate-primary" id="btnGuardarCategoria">
                     <i class="fas fa-check me-2"></i>Guardar
                 </button>
             </div>
@@ -340,15 +355,9 @@
     }
 
     .form-check-input:checked {
-        background-color: #198754;
-        border-color: #198754;
+        background-color: var(--slate-accent);
     }
-
-    .form-check-input:focus {
-        border-color: #198754;
-        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-    }
-
+    
     .modal-content {
         border-radius: 1rem;
     }
