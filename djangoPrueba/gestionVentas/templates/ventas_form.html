@@ -1,0 +1,748 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva Venta - Sistema de Gestión{% endblock %}
+
+{% block content %}
+<div class="container-fluid venta-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-shopping-cart"></i> Nueva Venta</h2>
+                <p class="mb-0 mt-2">Registra una nueva venta a cliente</p>
+            </div>
+            <a href="{% url 'ventas_list' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <form method="post" id="formVenta">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- COLUMNA IZQUIERDA: Información General -->
+            <div class="col-lg-4">
+                <div class="info-general-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-info-circle"></i> Información General</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group-spacing">
+                                <label for="cliente" class="form-label">
+                                    <i class="fas fa-user"></i> Cliente *
+                                </label>
+                                <select class="form-select" id="cliente" name="cliente" required>
+                                    <option value="">Seleccione un cliente...</option>
+                                    {% for cli in clientes %}
+                                    <option value="{{ cli.idCliente }}"
+                                            {% if venta and venta.cliente.idCliente == cli.idCliente %}selected{% endif %}>
+                                        {{ cli.nombre_completo }} - {{ cli.dni }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group-spacing">
+                                <label for="metodo_pago" class="form-label">
+                                    <i class="fas fa-credit-card"></i> Método de Pago *
+                                </label>
+                                <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                                    <option value="EFECTIVO" {% if venta and venta.metodo_pago == 'EFECTIVO' %}selected{% endif %}>Efectivo</option>
+                                    <option value="TARJETA" {% if venta and venta.metodo_pago == 'TARJETA' %}selected{% endif %}>Tarjeta de crédito/débito</option>
+                                    <option value="TRANSFERENCIA" {% if venta and venta.metodo_pago == 'TRANSFERENCIA' %}selected{% endif %}>Transferencia</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group-spacing">
+                                <label for="observaciones" class="form-label">
+                                    <i class="fas fa-comment"></i> Observaciones
+                                </label>
+                                <textarea class="form-control" id="observaciones" name="observaciones" 
+                                          rows="4" maxlength="200" 
+                                          placeholder="Agregar notas o comentarios sobre la venta...">{% if venta %}{{ venta.observaciones }}{% endif %}</textarea>
+                                <small class="text-muted">Máximo 200 caracteres</small>
+                            </div>
+
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Información:</strong>
+                                <p class="mb-0 mt-2">Complete todos los campos requeridos (*) y agregue al menos un producto para poder guardar la venta.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Productos y Totales -->
+            <div class="col-lg-8">
+                <!-- Productos -->
+                <div class="productos-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-boxes"></i> Productos</h4>
+                        <div id="alertProductos" class="alert alert-danger d-none mt-2"></div>
+                        <button type="button" class="btn btn-agregar-producto" id="btnAgregarProducto" onclick="agregarProducto()">
+                            <i class="fas fa-plus"></i> Agregar Producto
+                        </button>
+                    </div>
+
+                    <div id="productosContainer">
+                        <!-- Tabla de productos -->
+                        <div class="tabla-productos">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th width="35%">Producto</th>
+                                        <th width="12%">Cantidad</th>
+                                        <th width="15%">Precio Unit.</th>
+                                        <th width="10%">IVA %</th>
+                                        <th width="20%">Observaciones</th>
+                                        <th width="8%">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyProductos">
+                                    {% if detalles %}
+                                        {% for detalle in detalles %}
+                                        <tr id="producto-{{ forloop.counter }}">
+                                            <td>
+                                                <select class="form-select producto-select" 
+                                                        name="producto_{{ forloop.counter }}"
+                                                        data-id="{{ forloop.counter }}"
+                                                        onchange="seleccionarProducto('{{ forloop.counter }}')"
+                                                        required>
+                                                    <option value="">Seleccione un producto...</option>
+                                                    {% for prod in productos %}
+                                                        <option value="{{ prod.idProducto }}"
+                                                                data-precio="{{ prod.precioUnitario }}"
+                                                                data-stock="{{ prod.stock }}"
+                                                                data-iva="{{ prod.iva }}"
+                                                                {% if detalle.producto.idProducto == prod.idProducto %}selected{% endif %}>
+                                                            {{ prod.nombre }} (Stock: {{ prod.stock }})
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control" name="cantidad_{{ forloop.counter }}" 
+                                                       min="1" value="{{ detalle.cantidad }}" 
+                                                       onchange="calcularSubtotal('{{ forloop.counter }}')" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control" name="precio_{{ forloop.counter }}" 
+                                                       step="0.01" min="0" value="{{ detalle.precio_unitario }}" 
+                                                       onchange="calcularSubtotal('{{ forloop.counter }}')" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control" name="iva_{{ forloop.counter }}" 
+                                                       step="0.01" min="0" value="{{ detalle.iva_porcentaje }}" readonly 
+                                                       style="background-color: #f1f5f9;">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="observacion_{{ forloop.counter }}" 
+                                                       placeholder="Opcional" maxlength="100" value="{{ detalle.observacion }}">
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-eliminar" onclick="eliminarProducto('{{ forloop.counter }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                    <tr class="empty-row">
+                                        <td colspan="6" class="text-center py-4">
+                                            <i class="fas fa-box-open text-slate-neutral" style="font-size: 3rem; opacity: 0.5;"></i>
+                                            <p class="mb-0 mt-2 text-slate-neutral"><strong>No hay productos agregados</strong></p>
+                                            <small class="text-muted">Haz clic en "Agregar Producto" para comenzar</small>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Totales -->
+                <div class="totales-card">
+                    <div class="section-header">
+                        <h4><i class="fas fa-calculator"></i> Resumen de la Venta</h4>
+                    </div>
+                    <div class="total-section">
+                        <div class="total-row">
+                            <span class="total-label">Subtotal (sin IVA):</span>
+                            <span class="total-value" id="subtotalGeneral">$0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span class="total-label">IVA Total:</span>
+                            <span class="total-value" id="ivaGeneral">$0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span class="total-label">TOTAL A COBRAR:</span>
+                            <span class="total-value" id="totalGeneral">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="acciones-card">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <a href="{% url 'ventas_list' %}" class="btn btn-outline-slate btn-lg">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="estado" value="PENDIENTE" class="btn btn-slate-secondary btn-lg">
+                                <i class="fas fa-file"></i> Guardar Venta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let productos = JSON.parse('{{ productos_json|escapejs }}');
+let contadorProductos = 0;
+
+// Controla los productos ya seleccionados
+let productosSeleccionados = new Set();
+
+// Inicializar productos seleccionados si hay detalles
+'{% if detalles %}'
+'{% for detalle in detalles %}'
+productosSeleccionados.add('{{ detalle.producto.idProducto }}');
+'{% endfor %}'
+'{% endif %}'
+
+/* ============================================================
+   1) AGREGAR FILA DE PRODUCTO
+   ============================================================ */
+function agregarProducto() {
+    contadorProductos++;
+
+    const tbody = document.getElementById('tbodyProductos');
+    const emptyRow = tbody.querySelector('.empty-row');
+    if (emptyRow) emptyRow.remove();
+
+    const tr = document.createElement('tr');
+    tr.id = `producto-${contadorProductos}`;
+
+    tr.innerHTML = `
+        <td>
+            <select class="form-select producto-select" 
+                    name="producto_${contadorProductos}"
+                    data-id="${contadorProductos}"
+                    onchange="seleccionarProducto(${contadorProductos})"
+                    required>
+                ${generarOpcionesSelect()}
+            </select>
+        </td>
+
+        <td>
+            <input type="number" class="form-control" name="cantidad_${contadorProductos}" 
+                   min="1" value="1" onchange="calcularSubtotal(${contadorProductos})" required>
+        </td>
+
+        <td>
+            <input type="number" class="form-control" name="precio_${contadorProductos}" 
+                   step="0.01" min="0" placeholder="0.00" onchange="calcularSubtotal(${contadorProductos})" required>
+        </td>
+
+        <td>
+            <input type="number" class="form-control" name="iva_${contadorProductos}" 
+                   step="0.01" min="0" value="0" readonly style="background-color: #f1f5f9;">
+        </td>
+
+        <td>
+            <input type="text" class="form-control" name="observacion_${contadorProductos}" 
+                   placeholder="Opcional" maxlength="100">
+        </td>
+
+        <td>
+            <button type="button" class="btn btn-eliminar" onclick="eliminarProducto(${contadorProductos})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+
+    tbody.appendChild(tr);
+
+    actualizarSelects();
+}
+
+/* ============================================================
+   2) GENERA OPCIONES (OCULTA PRODUCTOS YA ELEGIDOS)
+   ============================================================ */
+function generarOpcionesSelect() {
+    let html = `<option value="">Seleccione un producto...</option>`;
+
+    productos.forEach(p => {
+        if (!productosSeleccionados.has(p.id)) {
+            html += `<option value="${p.id}" data-precio="${p.precio}" data-stock="${p.stock}" data-iva="${p.iva}">${p.nombre} (Stock: ${p.stock})</option>`;
+        }
+    });
+
+    return html;
+}
+
+/* ============================================================
+   3) SI SE SELECCIONA PRODUCTO → SE BLOQUEA GLOBALMENTE
+   ============================================================ */
+function seleccionarProducto(id) {
+    const select = document.querySelector(`#producto-${id} select`);
+    const idProd = parseInt(select.value);
+
+    if (idProd) {
+        productosSeleccionados.add(idProd);
+
+        // Actualizamos precio, stock e IVA
+        const precioInput = document.querySelector(`input[name="precio_${id}"]`);
+        const ivaInput = document.querySelector(`input[name="iva_${id}"]`);
+        const cantidadInput = document.querySelector(`input[name="cantidad_${id}"]`);
+        
+        const option = select.options[select.selectedIndex];
+        precioInput.value = option.getAttribute("data-precio");
+        ivaInput.value = option.getAttribute("data-iva");
+        
+        const stock = parseInt(option.getAttribute("data-stock"));
+        cantidadInput.max = stock;
+        
+        // Validar stock
+        if (stock === 0) {
+            alert(`El producto seleccionado no tiene stock disponible.`);
+            select.value = "";
+            productosSeleccionados.delete(idProd);
+            return;
+        }
+    }
+
+    actualizarSelects();
+    actualizarTotalesGenerales();
+}
+
+/* ============================================================
+   4) ACTUALIZA TODOS LOS SELECTS DEL FORMULARIO
+   ============================================================ */
+function actualizarSelects() {
+    const selects = document.querySelectorAll(".producto-select");
+
+    selects.forEach(select => {
+        const idSeleccionadoAnterior = parseInt(select.value);
+        const idFila = select.getAttribute("data-id");
+
+        select.innerHTML = generarOpcionesSelect();
+
+        // Si el usuario ya había seleccionado un producto y sigue válido, lo mantenemos
+        if (idSeleccionadoAnterior && productosSeleccionados.has(idSeleccionadoAnterior)) {
+            const prod = productos.find(p => p.id === idSeleccionadoAnterior);
+            if (prod) {
+                const op = document.createElement("option");
+                op.value = prod.id;
+                op.textContent = `${prod.nombre} (Stock: ${prod.stock})`;
+                op.setAttribute("data-precio", prod.precio);
+                op.setAttribute("data-stock", prod.stock);
+                op.setAttribute("data-iva", prod.iva);
+                op.selected = true;
+                select.appendChild(op);
+            }
+        }
+    });
+}
+
+/* ============================================================
+   5) ELIMINAR PRODUCTO → SE LIBERA PARA VOLVER A USAR
+   ============================================================ */
+function eliminarProducto(id) {
+    const fila = document.getElementById(`producto-${id}`);
+    if (!fila) return;
+
+    const select = fila.querySelector("select");
+    const idProd = parseInt(select.value);
+
+    if (idProd) {
+        productosSeleccionados.delete(idProd);
+    }
+
+    fila.remove();
+
+    const filas = document.querySelectorAll('#tbodyProductos tr:not(.empty-row)');
+    if (filas.length === 0) limpiarTablaProductos();
+
+    actualizarSelects();
+    actualizarTotalesGenerales();
+}
+
+/* ============================================================
+   6) LIMPIAR TABLA SI NO HAY PRODUCTOS
+   ============================================================ */
+function limpiarTablaProductos() {
+    document.getElementById("tbodyProductos").innerHTML = `
+        <tr class="empty-row">
+            <td colspan="6" class="text-center py-4">
+                <i class="fas fa-box-open" style="font-size: 3rem; opacity: .5;"></i>
+                <p class="mb-0 mt-2"><strong>No hay productos agregados</strong></p>
+                <small class="text-muted">Haz clic en "Agregar Producto"</small>
+            </td>
+        </tr>
+    `;
+}
+
+/* ============================================================
+   7) CALCULAR TOTALES
+   ============================================================ */
+function calcularSubtotal(id) {
+    // Validar stock en tiempo real
+    const cantidadInput = document.querySelector(`input[name="cantidad_${id}"]`);
+    const select = document.querySelector(`#producto-${id} select`);
+    
+    if (select && select.value) {
+        const option = select.options[select.selectedIndex];
+        const stock = parseInt(option.getAttribute("data-stock"));
+        const cantidad = parseInt(cantidadInput.value);
+        
+        if (cantidad > stock) {
+            alert(`Stock insuficiente. Disponible: ${stock}`);
+            cantidadInput.value = stock;
+        }
+    }
+    
+    actualizarTotalesGenerales();
+}
+
+function actualizarTotalesGenerales() {
+    let subtotalTotal = 0;
+    let ivaTotal = 0;
+
+    const filas = document.querySelectorAll('#tbodyProductos tr:not(.empty-row)');
+
+    filas.forEach(fila => {
+        const id = fila.id.split('-')[1];
+        const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${id}"]`)?.value) || 0;
+        const precio = parseFloat(document.querySelector(`input[name="precio_${id}"]`)?.value) || 0;
+        const iva = parseFloat(document.querySelector(`input[name="iva_${id}"]`)?.value) || 0;
+
+        const subtotal = cantidad * precio;
+        const ivaMonto = subtotal * (iva / 100);
+
+        subtotalTotal += subtotal;
+        ivaTotal += ivaMonto;
+    });
+
+    document.getElementById('subtotalGeneral').textContent = '$' + subtotalTotal.toFixed(2);
+    document.getElementById('ivaGeneral').textContent = '$' + ivaTotal.toFixed(2);
+    document.getElementById('totalGeneral').textContent = '$' + (subtotalTotal + ivaTotal).toFixed(2);
+}
+
+/* ============================================================
+   8) VALIDACIÓN FINAL: AL MENOS UN PRODUCTO
+   ============================================================ */
+document.getElementById("formVenta").addEventListener("submit", function (e) {
+    const filas = document.querySelectorAll('#tbodyProductos tr:not(.empty-row)');
+    const alertBox = document.getElementById("alertProductos");
+
+    // Reset alerta
+    alertBox.classList.add("d-none");
+    alertBox.textContent = "";
+
+    // Validar cantidad mínima
+    if (filas.length === 0) {
+        e.preventDefault();
+        alertBox.textContent = "Debe agregar al menos un producto antes de guardar la venta.";
+        alertBox.classList.remove("d-none");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
+    // Validar filas incompletas
+    for (const fila of filas) {
+        const id = fila.id.split("-")[1];
+
+        const producto = document.querySelector(`select[name="producto_${id}"]`).value;
+        const cantidad = document.querySelector(`input[name="cantidad_${id}"]`).value;
+        const precio = document.querySelector(`input[name="precio_${id}"]`).value;
+
+        if (!producto || cantidad <= 0 || precio <= 0) {
+            e.preventDefault();
+            alertBox.textContent = "Hay productos incompletos. Revise cantidad, precio y selección del producto.";
+            alertBox.classList.remove("d-none");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+    }
+});
+
+// Inicializar totales al cargar
+actualizarTotalesGenerales();
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .venta-container {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--slate-neutral);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .card-header {
+        background: var(--slate-primary);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .card-header h4 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--slate-primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--slate-primary);
+        box-shadow: 0 0 0 0.2rem rgba(15, 23, 42, 0.15);
+    }
+
+    .info-general-section {
+        position: sticky;
+        top: 20px;
+    }
+
+    .productos-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header {
+        background: var(--slate-primary);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-header h4 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tabla-productos {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .tabla-productos table {
+        margin-bottom: 0;
+    }
+
+    .tabla-productos thead {
+        background: var(--slate-secondary);
+        color: white;
+    }
+
+    .tabla-productos thead th {
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .tabla-productos tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .tabla-productos tbody tr:hover {
+        background: var(--slate-light);
+    }
+
+    .tabla-productos tbody td {
+        padding: 0.75rem;
+        vertical-align: middle;
+    }
+
+    .tabla-productos .form-control,
+    .tabla-productos .form-select {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .tabla-productos .btn-eliminar {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-agregar-producto {
+        background: var(--slate-success);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-agregar-producto:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+
+    .btn-eliminar {
+        background: #ef4444;
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-eliminar:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--slate-neutral);
+        background: white;
+        border-radius: 10px;
+        border: 2px dashed #cbd5e1;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .totales-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+    }
+
+    .total-section {
+        background: var(--slate-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #cbd5e1;
+    }
+
+    .total-row:last-child {
+        border-bottom: none;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--slate-primary);
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 2px solid var(--slate-primary);
+    }
+
+    .total-label {
+        font-weight: 600;
+        color: var(--slate-tertiary);
+    }
+
+    .total-value {
+        font-weight: 700;
+        color: var(--slate-primary);
+        font-size: 1.1rem;
+    }
+
+    .acciones-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+        margin-top: 1.5rem;
+    }
+
+    .form-group-spacing {
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 991px) {
+        .info-general-section {
+            position: relative;
+            top: 0;
+            margin-bottom: 2rem;
+        }
+    }
+</style>
+{% endblock %}

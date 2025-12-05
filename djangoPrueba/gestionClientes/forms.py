@@ -8,7 +8,7 @@ import re
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'dni', 'email', 'telefono', 'direccion', 'activo']
+        fields = ['nombre', 'apellido', 'dni', 'email', 'telefono', 'direccion']
         labels = {
             'nombre': 'Nombre',
             'apellido': 'Apellido',
@@ -16,7 +16,6 @@ class ClienteForm(forms.ModelForm):
             'email': 'Email',
             'telefono': 'Teléfono',
             'direccion': 'Dirección',
-            'activo': 'Activo'
         }
         widgets = {
             'nombre': forms.TextInput(attrs={
@@ -42,9 +41,6 @@ class ClienteForm(forms.ModelForm):
             'direccion': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Dirección completa'
-            }),
-            'activo': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
             })
         }
     

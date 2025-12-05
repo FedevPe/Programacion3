@@ -3,31 +3,129 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from decimal import Decimal
 import json
+from datetime import datetime, timedelta
 
 from .models import Compra, DetalleCompra
 from gestionProveedores.models import Proveedor
 from gestionProductos.models import Productos
-from gestionProveedores.models import ProductoProveedor  # tabla intermedia
+from gestionProveedores.models import ProductoProveedor
 
 @login_required
 def compras_list(request):
-
+    # Obtener todas las compras inicialmente
+    compras = Compra.objects.select_related('proveedor').all().order_by('-fecha_compra')
+    
+    # Obtener proveedores para los filtros
+    proveedores = Proveedor.objects.filter(activo=True).order_by('razon_social')
+    
+    # Aplicar filtros si existen
+    estado_filtro = request.GET.get('estado', '')
+    proveedor_filtro = request.GET.get('proveedor', '')
+    fecha_desde = request.GET.get('fecha_desde', '')
+    fecha_hasta = request.GET.get('fecha_hasta', '')
+    
+    # Filtrar por estado
+    if estado_filtro:
+        compras = compras.filter(estado=estado_filtro)
+    
+    # Filtrar por proveedor
+    if proveedor_filtro:
+        compras = compras.filter(proveedor_id=proveedor_filtro)
+    
+    # Filtrar por fechas
+    if fecha_desde and fecha_hasta:
+        try:
+            fecha_desde_obj = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
+            fecha_hasta_obj = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
+            
+            # Validar que fecha_hasta >= fecha_desde
+            if fecha_hasta_obj < fecha_desde_obj:
+                messages.error(request, 'La fecha hasta no puede ser anterior a la fecha desde.')
+                fecha_hasta = fecha_desde
+                fecha_hasta_obj = fecha_desde_obj
+            
+            # Si las fechas son iguales, ajustar fecha_hasta a las 23:59:59
+            if fecha_desde_obj == fecha_hasta_obj:
+                # Crear datetime con hora 00:00:00 para fecha_desde
+                fecha_desde_dt = datetime.combine(fecha_desde_obj, datetime.min.time())
+                # Crear datetime con hora 23:59:59 para fecha_hasta
+                fecha_hasta_dt = datetime.combine(fecha_hasta_obj, datetime.max.time())
+                
+                compras = compras.filter(
+                    fecha_compra__gte=fecha_desde_dt,
+                    fecha_compra__lte=fecha_hasta_dt
+                )
+            else:
+                # Si son fechas diferentes, filtrar normalmente
+                compras = compras.filter(
+                    fecha_compra__date__gte=fecha_desde_obj,
+                    fecha_compra__date__lte=fecha_hasta_obj
+                )
+                
+        except ValueError:
+            messages.error(request, 'Formato de fecha inválido.')
+    elif fecha_desde:
+        # Solo fecha_desde, usar todo el día
+        try:
+            fecha_desde_obj = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
+            fecha_desde_dt = datetime.combine(fecha_desde_obj, datetime.min.time())
+            fecha_hasta_dt = datetime.combine(fecha_desde_obj, datetime.max.time())
+            
+            compras = compras.filter(
+                fecha_compra__gte=fecha_desde_dt,
+                fecha_compra__lte=fecha_hasta_dt
+            )
+            fecha_hasta = fecha_desde
+        except ValueError:
+            messages.error(request, 'Formato de fecha inválido.')
+    elif fecha_hasta:
+        # Solo fecha_hasta, usar todo el día
+        try:
+            fecha_hasta_obj = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
+            fecha_desde_dt = datetime.combine(fecha_hasta_obj, datetime.min.time())
+            fecha_hasta_dt = datetime.combine(fecha_hasta_obj, datetime.max.time())
+            
+            compras = compras.filter(
+                fecha_compra__gte=fecha_desde_dt,
+                fecha_compra__lte=fecha_hasta_dt
+            )
+            fecha_desde = fecha_hasta
+        except ValueError:
+            messages.error(request, 'Formato de fecha inválido.')
+    
+    # Calcular estadísticas basadas en los filtros aplicados
     stats = {
-        'pendientes': Compra.objects.filter(estado='PENDIENTE').count(),
-        'confirmadas': Compra.objects.filter(estado='CONFIRMADA').count(),
-        'canceladas': Compra.objects.filter(estado='CANCELADA').count(),
-        'total': Compra.objects.filter(estado='CONFIRMADA').aggregate(Sum('total_con_iva'))['total_con_iva__sum'] or 0
+        'pendientes': compras.filter(estado='PENDIENTE').count(),
+        'confirmadas': compras.filter(estado='CONFIRMADA').count(),
+        'canceladas': compras.filter(estado='CANCELADA').count(),
+        'total': compras.filter(estado='CONFIRMADA').aggregate(Sum('total_con_iva'))['total_con_iva__sum'] or 0
     }
-
-    """Lista todas las compras"""
-    compras = Compra.objects.select_related('proveedor').all()
+    
+    # Configurar paginación
+    paginator = Paginator(compras, 10)  # 10 compras por página
+    page = request.GET.get('page')
+    
+    try:
+        compras_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        # Si la página no es un entero, mostrar la primera página
+        compras_paginadas = paginator.page(1)
+    except EmptyPage:
+        # Si la página está fuera de rango, mostrar la última página
+        compras_paginadas = paginator.page(paginator.num_pages)
     
     context = {
-        'compras': compras,
-        'stats' : stats
+        'compras': compras_paginadas,
+        'stats': stats,
+        'proveedores': proveedores,
+        'estado_filtro': estado_filtro,
+        'proveedor_filtro': proveedor_filtro,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
     }
     return render(request, 'compras/compras_list.html', context)
 

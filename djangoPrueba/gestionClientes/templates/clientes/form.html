@@ -61,12 +61,6 @@
                                 </label>
                                 
                                 {% if field.field.widget.input_type == 'checkbox' %}
-                                    <div class="form-check form-switch">
-                                        {{ field }}
-                                        <label class="form-check-label ms-2" for="{{ field.id_for_label }}">
-                                            {{ field.help_text|default:"Marcar si el cliente está activo" }}
-                                        </label>
-                                    </div>
                                 {% else %}
                                     {{ field }}
                                     {% if field.help_text %}

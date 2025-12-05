@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Lista de Compras - Sistema de Gestión{% endblock %}
+{% block title %}Lista de Ventas - Sistema de Gestión{% endblock %}
 
 {% block content %}
 <div class="" style="padding-left: 100px; padding-right: 100px;">
     
     <!-- Header -->
-    <div class="compras-header">
+    <div class="ventas-header">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2><i class="fas fa-shopping-cart"></i> Gestión de Compras</h2>
-                <p class="mb-0 mt-2">Administra las compras a proveedores</p>
+                <h2><i class="fas fa-shopping-cart"></i> Gestión de Ventas</h2>
+                <p class="mb-0 mt-2">Administra las ventas a clientes</p>
             </div>
-            <a href="{% url 'compra_crear' %}" class="btn btn-create">
-                <i class="fas fa-plus"></i> Nueva Compra
+            <a href="{% url 'ventas_crear' %}" class="btn btn-create">
+                <i class="fas fa-plus"></i> Nueva Venta
             </a>
         </div>
     </div>
@@ -50,10 +50,11 @@
         <div class="col-md-3 col-sm-6 mb-3 h-100">
             <div class="stats-card">
                 <div class="value"><i class="fas fa-dollar-sign"></i>{{ stats.total }}</div>
-                <div class="label">Total Invertido</div>
+                <div class="label">Total Vendido</div>
             </div>
         </div>
     </div>
+
     <!-- Mensajes -->
     {% if messages %}
         {% for message in messages %}
@@ -64,6 +65,7 @@
         </div>
         {% endfor %}
     {% endif %}
+
     <!-- Contenido Principal: Filtros + Lista -->
     <div class="row">
         <!-- Columna de Filtros (Izquierda) -->
@@ -84,13 +86,13 @@
                     </div>
 
                     <div class="filter-group">
-                        <label for="proveedor">
-                            <i class="fas fa-truck"></i> Proveedor
+                        <label for="cliente">
+                            <i class="fas fa-user"></i> Cliente
                         </label>
-                        <select name="proveedor" id="proveedor" class="form-select">
+                        <select name="cliente" id="cliente" class="form-select">
                             <option value="">Todos</option>
-                            {% for proveedor in proveedores %}
-                            <option value="{{ proveedor.idProveedor }}" {% if proveedor_filtro == proveedor.idProveedor|stringformat:"s" %}selected{% endif %}>{{ proveedor.razon_social }}</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.idCliente }}" {% if cliente_filtro == cliente.idCliente|stringformat:"s" %}selected{% endif %}>{{ cliente.nombre_completo }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -113,29 +115,29 @@
                         <i class="fas fa-search"></i> Aplicar Filtros
                     </button>
                     
-                    <a href="{% url 'compras_list' %}" class="btn btn-limpiar">
+                    <a href="{% url 'ventas_list' %}" class="btn btn-limpiar">
                         <i class="fas fa-eraser"></i> Limpiar
                     </a>
                 </form>
             </div>
         </div>
 
-        <!-- Columna de Lista de Compras (Derecha) -->
+        <!-- Columna de Lista de Ventas (Derecha) -->
         <div class="col-lg-9">
-            <div class="compras-content-wrapper">
+            <div class="ventas-content-wrapper">
                 <div class="content-header">
-                    <h5><i class="fas fa-list"></i> Lista de Compras</h5>
-                    <span class="badge bg-slate-primary">{{ compras.paginator.count }} compra{{ compras.paginator.count|pluralize }}</span>
+                    <h5><i class="fas fa-list"></i> Lista de Ventas</h5>
+                    <span class="badge bg-slate-primary">{{ ventas.paginator.count }} venta{{ ventas.paginator.count|pluralize }}</span>
                 </div>
 
-                {% if compras %}
+                {% if ventas %}
                 <div class="table-responsive">
-                    <table class="table table-compras">
+                    <table class="table table-ventas">
                         <thead>
                             <tr>
                                 <th>#</th>
                                 <th>Fecha</th>
-                                <th>Proveedor</th>
+                                <th>Cliente</th>
                                 <th>Método Pago</th>
                                 <th>Total</th>
                                 <th>Estado</th>
@@ -143,24 +145,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for compra in compras %}
+                            {% for venta in ventas %}
                             <tr>
-                                <td><strong>#{{ compra.idCompra }}</strong></td>
-                                <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                                <td><strong>#{{ venta.idVenta }}</strong></td>
+                                <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
                                 <td>
-                                    <i class="fas fa-truck text-slate-primary"></i>
-                                    {{ compra.proveedor.razon_social }}
+                                    <i class="fas fa-user text-slate-primary"></i>
+                                    {{ venta.cliente.nombre_completo }}
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary">{{ compra.get_metodo_pago_display }}</span>
+                                    <span class="badge bg-secondary">{{ venta.get_metodo_pago_display }}</span>
                                 </td>
-                                <td><strong class="text-slate-primary">${{ compra.total_con_iva|floatformat:2 }}</strong></td>
+                                <td><strong class="text-slate-primary">${{ venta.total_con_iva|floatformat:2 }}</strong></td>
                                 <td>
-                                    {% if compra.estado == 'PENDIENTE' %}
+                                    {% if venta.estado == 'PENDIENTE' %}
                                     <span class="badge-estado badge-pendiente">
                                         <i class="fas fa-clock"></i> Pendiente
                                     </span>
-                                    {% elif compra.estado == 'CONFIRMADA' %}
+                                    {% elif venta.estado == 'CONFIRMADA' %}
                                     <span class="badge-estado badge-confirmada">
                                         <i class="fas fa-check-circle"></i> Confirmada
                                     </span>
@@ -171,14 +173,14 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'compra_detalle' compra.idCompra %}" 
+                                    <a href="{% url 'ventas_detalle' venta.idVenta %}" 
                                        class="btn btn-ver btn-sm me-1" 
                                        title="Ver detalle">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    {% if compra.estado == 'PENDIENTE' %}
-                                    <button class="btn btn-eliminar-compra btn-sm" 
-                                            onclick="confirmarEliminacion('{{ compra.idCompra }}')"
+                                    {% if venta.estado == 'PENDIENTE' %}
+                                    <button class="btn btn-eliminar-venta btn-sm" 
+                                            onclick="confirmarEliminacion('{{ venta.idVenta }}')"
                                             title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -191,50 +193,50 @@
                 </div>
 
                 <!-- Paginación -->
-                {% if compras.has_other_pages %}
-                <nav aria-label="Paginación de compras">
+                {% if ventas.has_other_pages %}
+                <nav aria-label="Paginación de ventas">
                     <ul class="pagination justify-content-center mt-4">
-                        {% if compras.has_previous %}
+                        {% if ventas.has_previous %}
                         <li class="page-item">
                             <button class="page-link" onclick="cargarPagina(1)" aria-label="Primera">
                                 <span aria-hidden="true"><i class="fas fa-angle-double-left"></i></span>
                             </button>
                         </li>
                         <li class="page-item">
-                            <button class="page-link" onclick="cargarPagina('{{ compras.previous_page_number }}')" aria-label="Anterior">
+                            <button class="page-link" onclick="cargarPagina('{{ ventas.previous_page_number }}')" aria-label="Anterior">
                                 <span aria-hidden="true"><i class="fas fa-angle-left"></i></span>
                             </button>
                         </li>
                         {% endif %}
 
-                        {% for num in compras.paginator.page_range %}
-                            {% if compras.number == num %}
+                        {% for num in ventas.paginator.page_range %}
+                            {% if ventas.number == num %}
                             <li class="page-item active">
                                 <span class="page-link">{{ num }}</span>
                             </li>
-                            {% elif num > compras.number|add:'-3' and num < compras.number|add:'3' %}
+                            {% elif num > ventas.number|add:'-3' and num < ventas.number|add:'3' %}
                             <li class="page-item">
                                 <button class="page-link" onclick="cargarPagina('{{ num }}')">{{ num }}</button>
                             </li>
                             {% endif %}
                         {% endfor %}
 
-                        {% if compras.has_next %}
+                        {% if ventas.has_next %}
                         <li class="page-item">
-                            <button class="page-link" onclick="cargarPagina('{{ compras.next_page_number }}')" aria-label="Siguiente">
+                            <button class="page-link" onclick="cargarPagina('{{ ventas.next_page_number }}')" aria-label="Siguiente">
                                 <span aria-hidden="true"><i class="fas fa-angle-right"></i></span>
                             </button>
                         </li>
                         <li class="page-item">
-                            <button class="page-link" onclick="cargarPagina('{{ compras.paginator.num_pages }}')" aria-label="Última">
+                            <button class="page-link" onclick="cargarPagina('{{ ventas.paginator.num_pages }}')" aria-label="Última">
                                 <span aria-hidden="true"><i class="fas fa-angle-double-right"></i></span>
                             </button>
                         </li>
                         {% endif %}
                     </ul>
                     <p class="text-center text-muted small">
-                        Mostrando página {{ compras.number }} de {{ compras.paginator.num_pages }} 
-                        ({{ compras.paginator.count }} total{{ compras.paginator.count|pluralize:"es" }})
+                        Mostrando página {{ ventas.number }} de {{ ventas.paginator.num_pages }} 
+                        ({{ ventas.paginator.count }} total{{ ventas.paginator.count|pluralize:"es" }})
                     </p>
                 </nav>
                 {% endif %}
@@ -242,9 +244,9 @@
                 {% else %}
                 <div class="empty-state">
                     <i class="fas fa-shopping-cart"></i>
-                    <h4>No hay compras registradas</h4>
-                    <a href="{% url 'compra_crear' %}" class="btn btn-slate-primary"> 
-                        Crear Orden de Compra
+                    <h4>No hay ventas registradas</h4>
+                    <a href="{% url 'ventas_crear' %}" class="btn btn-slate-primary"> 
+                        Crear Nueva Venta
                     </a>
                 </div>
                 {% endif %}
@@ -264,7 +266,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>¿Estás seguro de que deseas cancelar esta orden de compra?</p>
+                <p>¿Estás seguro de que deseas eliminar esta venta?</p>
                 <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
             </div>
             <div class="modal-footer">
@@ -272,18 +274,19 @@
                 <form id="formEliminar" method="post" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Cancelar
+                        <i class="fas fa-trash"></i> Eliminar
                     </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 <script>
-    function confirmarEliminacion(idCompra) {
+    function confirmarEliminacion(idVenta) {
         const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
         const form = document.getElementById('formEliminar');
-        form.action = `/compras/${idCompra}/eliminar/`;
+        form.action = `/ventas/eliminar/${idVenta}/`;
         modal.show();
     }
 
@@ -292,23 +295,19 @@
         const fechaDesde = document.getElementById('fecha_desde');
         const fechaHasta = document.getElementById('fecha_hasta');
         
-        // Si ambas fechas están completas
         if (fechaDesde.value && fechaHasta.value) {
             const desde = new Date(fechaDesde.value);
             const hasta = new Date(fechaHasta.value);
             
-            // Si fecha hasta es menor que fecha desde, mostrar error y retornar false
             if (hasta < desde) {
                 mostrarAlerta('La fecha hasta no puede ser anterior a la fecha desde.', 'danger');
                 fechaHasta.focus();
                 return false;
             }
         }
-        // Si solo hay fecha desde, copiar a fecha hasta
         else if (fechaDesde.value && !fechaHasta.value) {
             fechaHasta.value = fechaDesde.value;
         }
-        // Si solo hay fecha hasta, copiar a fecha desde
         else if (!fechaDesde.value && fechaHasta.value) {
             fechaDesde.value = fechaHasta.value;
         }
@@ -333,46 +332,39 @@
     }
 
     // Función para cargar contenido con filtros y paginación
-    function cargarCompras(numeroPagina = 1) {
-        // Validar fechas antes de aplicar filtros
+    function cargarVentas(numeroPagina = 1) {
         if (!validarFechas()) {
-            return; // Si la validación falla, no continuar
+            return;
         }
         
-        // Mostrar indicador de carga
-        const wrapper = document.querySelector('.compras-content-wrapper');
+        const wrapper = document.querySelector('.ventas-content-wrapper');
         const estadisticas = document.querySelectorAll('.stats-card');
         
         wrapper.style.opacity = '0.5';
         wrapper.style.pointerEvents = 'none';
         
-        // Obtener los valores actuales de los filtros
         const estado = document.getElementById('estado').value;
-        const proveedor = document.getElementById('proveedor').value;
+        const cliente = document.getElementById('cliente').value;
         const fechaDesde = document.getElementById('fecha_desde').value;
         const fechaHasta = document.getElementById('fecha_hasta').value;
         
-        // Construir la URL con los parámetros
         const params = new URLSearchParams();
         params.append('page', numeroPagina);
         if (estado) params.append('estado', estado);
-        if (proveedor) params.append('proveedor', proveedor);
+        if (cliente) params.append('cliente', cliente);
         if (fechaDesde) params.append('fecha_desde', fechaDesde);
         if (fechaHasta) params.append('fecha_hasta', fechaHasta);
         
-        // Hacer la petición AJAX
-        fetch(`{% url 'compras_list' %}?${params.toString()}`, {
+        fetch(`{% url 'ventas_list' %}?${params.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.text())
         .then(html => {
-            // Crear un documento temporal para parsear el HTML
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Extraer y actualizar las estadísticas
             const nuevasStats = doc.querySelectorAll('.stats-card');
             nuevasStats.forEach((stat, index) => {
                 if (estadisticas[index]) {
@@ -380,23 +372,19 @@
                 }
             });
             
-            // Extraer y actualizar el contenido principal
-            const nuevoContenido = doc.querySelector('.compras-content-wrapper');
+            const nuevoContenido = doc.querySelector('.ventas-content-wrapper');
             if (nuevoContenido) {
                 wrapper.innerHTML = nuevoContenido.innerHTML;
             }
             
-            // Restaurar opacidad
             wrapper.style.opacity = '1';
             wrapper.style.pointerEvents = 'auto';
             
-            // Hacer scroll suave hacia arriba de la tabla
             wrapper.scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start' 
             });
             
-            // Actualizar la URL en el navegador sin recargar
             const nuevaUrl = `${window.location.pathname}?${params.toString()}`;
             window.history.pushState({}, '', nuevaUrl);
         })
@@ -408,18 +396,15 @@
         });
     }
 
-    // Función para cargar página (se llama desde los botones de paginación)
     function cargarPagina(numeroPagina) {
-        cargarCompras(numeroPagina);
+        cargarVentas(numeroPagina);
     }
 
-    // Event listener para el formulario de filtros
     document.getElementById('formFiltros').addEventListener('submit', function(e) {
         e.preventDefault();
-        cargarCompras(1); // Siempre ir a la página 1 cuando se aplican filtros
+        cargarVentas(1);
     });
 
-    // Event listeners para los campos de fecha
     document.getElementById('fecha_desde').addEventListener('change', function() {
         const fechaHasta = document.getElementById('fecha_hasta');
         if (fechaHasta.value) {
@@ -448,7 +433,7 @@
 
 {% block extra_css %}
 <style>
-    .compras-header {
+    .ventas-header {
         background: var(--slate-neutral);
         color: white;
         padding: 2rem;
@@ -457,7 +442,7 @@
         box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
     }
 
-    .compras-header h2 {
+    .ventas-header h2 {
         margin: 0;
         font-weight: 700;
     }
@@ -524,19 +509,19 @@
         display: block;
     }
 
-    .table-compras {
+    .table-ventas {
         background: white;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
-    .table-compras thead {
+    .table-ventas thead {
         background: var(--slate-secondary);
         color: white;
     }
 
-    .table-compras thead th {
+    .table-ventas thead th {
         border: none;
         padding: 1rem;
         font-weight: 600;
@@ -545,16 +530,16 @@
         letter-spacing: 0.5px;
     }
 
-    .table-compras tbody tr {
+    .table-ventas tbody tr {
         transition: all 0.2s ease;
         border-bottom: 1px solid #e2e8f0;
     }
 
-    .table-compras tbody tr:hover {
+    .table-ventas tbody tr:hover {
         background: var(--slate-light);
     }
 
-    .table-compras tbody td {
+    .table-ventas tbody td {
         padding: 1rem;
         vertical-align: middle;
     }
@@ -596,7 +581,7 @@
         color: white;
     }
 
-    .btn-eliminar-compra {
+    .btn-eliminar-venta {
         background: #ef4444;
         color: white;
         border: none;
@@ -605,7 +590,7 @@
         transition: all 0.3s ease;
     }
 
-    .btn-eliminar-compra:hover {
+    .btn-eliminar-venta:hover {
         background: #dc2626;
         transform: translateY(-2px);
         color: white;
@@ -636,7 +621,7 @@
         margin-bottom: 2rem;
     }
 
-    .compras-content-wrapper {
+    .ventas-content-wrapper {
         background: white;
         border-radius: 12px;
         padding: 1.5rem;
@@ -697,7 +682,6 @@
         color: var(--slate-secondary);
     }
 
-    /* Estilos de paginación */
     .pagination {
         margin-top: 2rem;
     }
@@ -735,12 +719,10 @@
         border-color: var(--slate-light);
     }
 
-    /* Transición suave para cambios de contenido */
     .table-responsive {
         transition: opacity 0.3s ease;
     }
 
-    /* Indicador de carga */
     .loading-overlay {
         position: relative;
     }
@@ -768,7 +750,6 @@
         }
     }
     
-    /* Botón principal */
     .btn-create {
         background: white;
         color: var(--slate-primary);
