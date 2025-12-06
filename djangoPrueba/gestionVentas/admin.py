@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 class DetalleVentaInline(admin.TabularInline):
     model = DetalleVenta
     extra = 1
-    fields = ('producto', 'cantidad', 'precio_unitario', 'iva_porcentaje', 'iva_monto', 'subtotal_con_iva', 'observacion')
+    fields = ('producto', 'cantidad', 'precio_unitario', 'iva_porcentaje', 'iva_monto', 'subtotal_con_iva_calc', 'observacion')
     readonly_fields = ('iva_porcentaje', 'iva_monto', 'subtotal_con_iva')
     autocomplete_fields = ('producto',)
 

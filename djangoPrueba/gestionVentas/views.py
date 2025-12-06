@@ -113,10 +113,21 @@ def ventas_form(request, id=None):
                 )
             
             # Procesar detalles
-            productos_ids = request.POST.getlist('producto_id[]')
-            cantidades = request.POST.getlist('cantidad[]')
-            precios = request.POST.getlist('precio_unitario[]')
-            observaciones_det = request.POST.getlist('observacion_detalle[]')
+            productos_ids = []
+            cantidades = []
+            precios = []
+            observaciones_det = []
+
+
+            for key in request.POST:
+                if key.startswith("producto_"):
+                    productos_ids.append(request.POST[key])
+                if key.startswith("cantidad_"):
+                    cantidades.append(request.POST[key])
+                if key.startswith("precio_"):
+                    precios.append(request.POST[key])
+                if key.startswith("observacion_"):
+                    observaciones_det.append(request.POST[key])
             
             if not productos_ids:
                 raise ValidationError('Debe agregar al menos un producto')

@@ -12,7 +12,7 @@ from .forms import ProductoForm, MarcaForm, CategoriaForm
 @login_required
 def productos_list(request):
     productos = Productos.objects.all()
-    return render(request, "productos/list.html", {"productos": productos})
+    return render(request, "productos/productos_list.html", {"productos": productos})
 
 
 @login_required
@@ -26,7 +26,7 @@ def producto_crear(request):
     else:
         form = ProductoForm()
 
-    return render(request, "productos/form.html", {"form": form})
+    return render(request, "productos/productos_form.html", {"form": form})
 
 
 @login_required
@@ -42,7 +42,7 @@ def producto_editar(request, id):
     else:
         form = ProductoForm(instance=producto)
 
-    return render(request, "productos/form.html", {"form": form})
+    return render(request, "productos/productos_form.html", {"form": form})
 
 @login_required
 def producto_detalle(request, id):
@@ -52,7 +52,7 @@ def producto_detalle(request, id):
     producto.precio_con_iva = producto.precioUnitario
 
     # Renderiza la plantilla de detalle, pasando el objeto producto.
-    return render(request, "productos/detalle.html", {"producto": producto})
+    return render(request, "productos/productos_detalle.html", {"producto": producto})
 
 @login_required
 def producto_eliminar(request, id):
@@ -64,7 +64,7 @@ def producto_eliminar(request, id):
         return redirect("productos_list")
 
     # Si es GET: mostrar confirmación
-    return render(request, "productos/confirm_delete.html", {"producto": producto})
+    return render(request, "productos/productos_confirm_delete.html", {"producto": producto})
 
 # ============================================================
 # MARCAS
@@ -72,7 +72,7 @@ def producto_eliminar(request, id):
 @login_required
 def marcas_list(request):
     marcas = Marca.objects.all()
-    return render(request, "marcas/list.html", {"marcas": marcas})
+    return render(request, "marcas/marcas_list.html", {"marcas": marcas})
 
 
 @login_required
@@ -86,7 +86,7 @@ def marca_crear(request):
     else:
         form = MarcaForm()
 
-    return render(request, "marcas/form.html", {"form": form})
+    return render(request, "marcas/marcas_form.html", {"form": form})
 
 def marca_editar(request, id):
     marca = get_object_or_404(Marca, pk=id)
@@ -100,7 +100,7 @@ def marca_editar(request, id):
     else:
         form = MarcaForm(instance=marca)
 
-    return render(request, "marcas/form.html", {"form": form, "accion": "Editar"})
+    return render(request, "marcas/marcas_form.html", {"form": form, "accion": "Editar"})
 
 
 @login_required
@@ -112,7 +112,7 @@ def marca_eliminar(request, id):
         messages.success(request, f"Marca '{marca.nombre}' eliminada.")
         return redirect("marcas_list")
 
-    return render(request, "marcas/confirm_delete.html", {"marca": marca})
+    return render(request, "marcas/marcas_confirm_delete.html", {"marca": marca})
 
 
 # ============================================================
@@ -121,7 +121,7 @@ def marca_eliminar(request, id):
 @login_required
 def categorias_list(request):
     categorias = Categoria.objects.all()
-    return render(request, "categorias/list.html", {"categorias": categorias})
+    return render(request, "categorias/categorias_list.html", {"categorias": categorias})
 
 
 @login_required
@@ -135,7 +135,7 @@ def categoria_crear(request):
     else:
         form = CategoriaForm()
 
-    return render(request, "categorias/form.html", {"form": form})
+    return render(request, "categorias/categorias_form.html", {"form": form})
 
 @login_required
 def categoria_editar(request, id):
@@ -150,7 +150,7 @@ def categoria_editar(request, id):
     else:
         form = CategoriaForm(instance=categoria)
 
-    return render(request, "categorias/form.html", {"form": form, "accion": "Editar"})
+    return render(request, "categorias/categorias_form.html", {"form": form, "accion": "Editar"})
 
 @login_required
 def categoria_eliminar(request, id):
@@ -162,7 +162,7 @@ def categoria_eliminar(request, id):
         messages.success(request, f"Categoría '{nombre}' eliminada.")
         return redirect("categorias_list")
 
-    return render(request, "categorias/confirm_delete.html", {"categoria": categoria})
+    return render(request, "categorias/categorias_confirm_delete.html", {"categoria": categoria})
 
 @login_required
 def marca_crear_ajax(request):

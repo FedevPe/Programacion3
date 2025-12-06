@@ -1,7 +1,7 @@
 # gestionVentas/models.py
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from gestionClientes.models import Cliente
 from gestionUsuarios.models import Usuario
 from gestionProductos.models import Productos
@@ -122,8 +122,7 @@ class DetalleVenta(models.Model):
         return (Decimal(self.cantidad) * Decimal(self.precio_unitario))
 
     @property
-    def subtotal_con_iva(self):
-        # property placeholder; we also persist subtotal_con_iva in DB for reporting
+    def subtotal_con_iva_calc(self):
         base = self.subtotal
         iva = (base * (self.iva_porcentaje or Decimal('0'))) / Decimal('100')
         return base + iva
@@ -142,24 +141,31 @@ class DetalleVenta(models.Model):
             raise ValidationError(f"Cantidad ({self.cantidad}) supera el stock disponible ({self.producto.stock}) para el producto {self.producto.nombre}.")
 
     def save(self, *args, **kwargs):
-        # Asignar precio y iva del producto si no se pasaron explícitamente
         if not self.precio_unitario:
             self.precio_unitario = self.producto.precioUnitario
+
         self.iva_porcentaje = self.producto.iva or Decimal('0.00')
 
-        # calcular montos
         base = self.subtotal
-        self.iva_monto = (base * (self.iva_porcentaje or Decimal('0'))) / Decimal('100')
-        self.subtotal_con_iva = base + self.iva_monto
 
-        # validar antes de guardar
-        self.full_clean()  # dispara clean() y demás validaciones
+        # Calcular iva con 2 decimales
+        self.iva_monto = (
+            (base * self.iva_porcentaje / Decimal('100'))
+            .quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        )
+
+        # Subtotal con iva redondeado
+        self.subtotal_con_iva = (
+            (base + self.iva_monto)
+            .quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        )
+
+        # Validación
+        self.full_clean()
 
         super().save(*args, **kwargs)
 
-        # actualizar totales de la venta (evitar reentradas costosas)
         try:
             self.venta.calcular_total()
         except Exception:
-            # si la venta se borró o hay otro problema, no interrumpir el guardado aquí
             pass

@@ -15,13 +15,13 @@ from .forms import ClienteForm
 def clientes_list(request):
     """Lista todos los clientes"""
     clientes = Cliente.objects.all().order_by('-fecha_registro')
-    return render(request, "clientes/list.html", {"clientes": clientes})
+    return render(request, "list.html", {"clientes": clientes})
 
 @login_required
 def cliente_detalle(request, id):
     """Muestra los datos de un cliente"""
     cliente = get_object_or_404(Cliente, idCliente=id)
-    return render(request, "clientes/detalle.html", {"cliente": cliente})
+    return render(request, "detalle.html", {"cliente": cliente})
 
 @login_required
 def cliente_crear(request):
@@ -35,7 +35,7 @@ def cliente_crear(request):
     else:
         form = ClienteForm()
 
-    return render(request, "clientes/form.html", {"form": form, "accion": "Crear"})
+    return render(request, "form.html", {"form": form, "accion": "Crear"})
 
 
 @login_required
@@ -52,7 +52,7 @@ def cliente_editar(request, id):
     else:
         form = ClienteForm(instance=cliente)
 
-    return render(request, "clientes/form.html", {"form": form, "accion": "Editar"})
+    return render(request, "form.html", {"form": form, "accion": "Editar"})
 
 
 # @login_required
@@ -76,4 +76,4 @@ def cliente_confirmar_eliminar(request, id):
         return redirect("clientes_list")
 
     # Si es GET, mostrar pantalla de confirmación
-    return render(request, "clientes/confirmar_eliminar.html", {"cliente": cliente})
+    return render(request, "confirmar_eliminar.html", {"cliente": cliente})

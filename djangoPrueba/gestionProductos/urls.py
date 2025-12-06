@@ -16,15 +16,15 @@ urlpatterns = [
     path("categorias/eliminar/<int:id>/", views.categoria_eliminar, name="categoria_eliminar"),
 
     # PRODUCTOS
-    path("productos/", views.productos_list, name="productos_list"),
-    path("productos/detalle/<int:id>/", views.producto_detalle, name="producto_detalle"),
-    path("productos/crear/", views.producto_crear, name="producto_crear"),
-    path("productos/editar/<int:id>/", views.producto_editar, name="producto_editar"),
-    path("productos/eliminar/<int:id>/", views.producto_eliminar, name="producto_eliminar"),
+    path("", views.productos_list, name="productos_list"),
+    path("detalle/<int:id>/", views.producto_detalle, name="producto_detalle"),
+    path("crear/", views.producto_crear, name="producto_crear"),
+    path("editar/<int:id>/", views.producto_editar, name="producto_editar"),
+    path("eliminar/<int:id>/", views.producto_eliminar, name="producto_eliminar"),
 
     # MARCAS - AJAX
-    path("marcas/ajax/crear/", views.marca_crear_ajax, name="marca_crear_ajax"),
+    path("marca/ajax/crear/", views.marca_crear_ajax, name="marca_crear_ajax"),
     # CATEGORIAS - AJAX
-    path("categorias/ajax/crear/", views.categoria_crear_ajax, name="categoria_crear_ajax"),
+    path("categoria/ajax/crear/", views.categoria_crear_ajax, name="categoria_crear_ajax"),
 ]
 
