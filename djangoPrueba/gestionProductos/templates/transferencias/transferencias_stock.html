@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transferencias de Stock{% endblock %}
+
+{% block content %}
+<div style="padding-left: 100px; padding-right: 100px;">
+    <!-- Header -->
+    <div class="row mb-4 page-header bg-slate-neutral text-white">
+        <div class="col-12">
+            <h2 class="mb-0">
+                <i class="fas fa-exchange-alt me-2"></i>
+                Transferencias de Stock
+            </h2>
+        </div>
+    </div>
+
+    <!-- Tarjetas Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-list-ul fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1 fw-normal">Total Registros</h6>
+                            <h3 class="mb-0 fw-bold" id="stat-total">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-arrow-down fa-2x text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1 fw-normal">Total Entradas</h6>
+                            <h3 class="mb-0 fw-bold text-success" id="stat-entradas">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-danger bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-arrow-up fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1 fw-normal">Total Salidas</h6>
+                            <h3 class="mb-0 fw-bold text-danger" id="stat-salidas">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form id="filtrosForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filtroProducto" class="form-label">Producto</label>
+                        <select class="form-select" id="filtroProducto" name="producto">
+                            <option value="">Todos los productos</option>
+                            {% for producto in productos %}
+                            <option value="{{ producto.idProducto }}">
+                                {{ producto.codProducto }} - {{ producto.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="filtroTipo" class="form-label">Tipo de Movimiento</label>
+                        <select class="form-select" id="filtroTipo" name="tipo">
+                            <option value="">Todos</option>
+                            <option value="entrada">Entradas</option>
+                            <option value="salida">Salidas</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="filtroFechaDesde" class="form-label">Fecha Desde</label>
+                        <input type="date" class="form-control" id="filtroFechaDesde" name="fecha_desde">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="filtroFechaHasta" class="form-label">Fecha Hasta</label>
+                        <input type="date" class="form-control" id="filtroFechaHasta" name="fecha_hasta">
+                    </div>
+
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="button" class="btn btn-secondary w-100" id="btnLimpiarFiltros">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Transferencias -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Historial de Movimientos
+                </h5>
+                <span class="badge bg-primary" id="totalRegistros">0 registros</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando transferencias...</p>
+            </div>
+
+            <!-- Mensaje sin resultados -->
+            <div id="sinResultados" class="text-center py-5" style="display: none;">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No se encontraron transferencias con los filtros aplicados</p>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div id="errorMensaje" class="alert alert-danger m-3" style="display: none;" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="errorTexto"></span>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="tablaTransferencias" style="display: none;">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="8%">Tipo</th>
+                            <th width="12%">Fecha</th>
+                            <th width="10%">Código</th>
+                            <th width="20%">Producto</th>
+                            <th width="12%">Marca/Categoría</th>
+                            <th width="8%" class="text-center">Cantidad</th>
+                            <th width="10%" class="text-end">Precio Unit.</th>
+                            <th width="10%" class="text-end">Subtotal</th>
+                            <th width="10%">Referencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <!-- Se llena con AJAX -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="card-footer bg-white" id="paginacionContainer" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted" id="paginacionInfo">Mostrando 0 de 0 registros</span>
+                </div>
+                <nav>
+                    <ul class="pagination mb-0" id="paginacion">
+                        <!-- Se llena con AJAX -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Header de página */
+    .page-header {
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h2 i {
+        font-size: 2rem;
+        opacity: 0.9;
+    }
+
+.badge-tipo {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    font-weight: 600;
+}
+
+.badge-entrada {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-salida {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.table thead th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.text-monospace {
+    font-family: 'Courier New', monospace;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    
+    // Cargar datos iniciales
+    cargarTransferencias();
+    
+    // Event listeners para filtros
+    document.getElementById('filtroProducto').addEventListener('change', function() {
+        currentPage = 1;
+        cargarTransferencias();
+    });
+    
+    document.getElementById('filtroTipo').addEventListener('change', function() {
+        currentPage = 1;
+        cargarTransferencias();
+    });
+    
+    document.getElementById('filtroFechaDesde').addEventListener('change', function() {
+        validarFechas();
+        currentPage = 1;
+        cargarTransferencias();
+    });
+    
+    document.getElementById('filtroFechaHasta').addEventListener('change', function() {
+        validarFechas();
+        currentPage = 1;
+        cargarTransferencias();
+    });
+    
+    // Botón limpiar filtros
+    document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
+        document.getElementById('filtrosForm').reset();
+        currentPage = 1;
+        cargarTransferencias();
+    });
+    
+    function validarFechas() {
+        const fechaDesde = document.getElementById('filtroFechaDesde').value;
+        const fechaHasta = document.getElementById('filtroFechaHasta').value;
+        
+        if (fechaDesde && fechaHasta && fechaDesde > fechaHasta) {
+            mostrarError('La fecha desde no puede ser mayor que la fecha hasta');
+            document.getElementById('filtroFechaDesde').value = '';
+            document.getElementById('filtroFechaHasta').value = '';
+        }
+    }
+    
+    function cargarTransferencias(page = 1) {
+        currentPage = page;
+        
+        // Mostrar spinner
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('tablaTransferencias').style.display = 'none';
+        document.getElementById('sinResultados').style.display = 'none';
+        document.getElementById('errorMensaje').style.display = 'none';
+        document.getElementById('paginacionContainer').style.display = 'none';
+        
+        // Obtener valores de filtros
+        const formData = new FormData(document.getElementById('filtrosForm'));
+        const params = new URLSearchParams(formData);
+        params.append('page', page);
+        
+        fetch(`{% url 'transferencias_stock_ajax' %}?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Error al cargar las transferencias');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Ocultar spinner
+            document.getElementById('loadingSpinner').style.display = 'none';
+            
+            if (data.success) {
+                // Actualizar estadísticas
+                document.getElementById('stat-total').textContent = data.estadisticas.total_registros.toLocaleString();
+                document.getElementById('stat-entradas').textContent = data.estadisticas.total_entradas.toLocaleString();
+                document.getElementById('stat-salidas').textContent = data.estadisticas.total_salidas.toLocaleString();
+                document.getElementById('totalRegistros').textContent = `${data.estadisticas.total_registros.toLocaleString()} registros`;
+                
+                if (data.movimientos.length > 0) {
+                    renderizarTabla(data.movimientos);
+                    renderizarPaginacion(data.paginacion);
+                    document.getElementById('tablaTransferencias').style.display = 'table';
+                    document.getElementById('paginacionContainer').style.display = 'block';
+                } else {
+                    document.getElementById('sinResultados').style.display = 'block';
+                }
+            }
+        })
+        .catch(error => {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            mostrarError(error.message);
+        });
+    }
+    
+    function renderizarTabla(movimientos) {
+        const tbody = document.getElementById('tablaBody');
+        tbody.innerHTML = '';
+        
+        movimientos.forEach(mov => {
+            const tr = document.createElement('tr');
+            
+            const tipoBadge = mov.tipo === 'entrada' 
+                ? '<span class="badge badge-tipo badge-entrada"><i class="fas fa-arrow-down me-1"></i>Entrada</span>'
+                : '<span class="badge badge-tipo badge-salida"><i class="fas fa-arrow-up me-1"></i>Salida</span>';
+            
+            tr.innerHTML = `
+                <td>${tipoBadge}</td>
+                <td class="text-muted small">${mov.fecha}</td>
+                <td><span class="text-monospace">${mov.producto_codigo}</span></td>
+                <td>
+                    <strong>${mov.producto_nombre}</strong>
+                    ${mov.observacion ? `<br><small class="text-muted">${mov.observacion}</small>` : ''}
+                </td>
+                <td class="small">
+                    <div>${mov.marca}</div>
+                    <div class="text-muted">${mov.categoria}</div>
+                </td>
+                <td class="text-center">
+                    <span class="badge ${mov.tipo === 'entrada' ? 'bg-success' : 'bg-danger'}">
+                        ${mov.tipo === 'entrada' ? '+' : '-'}${mov.cantidad}
+                    </span>
+                </td>
+                <td class="text-end text-monospace">$${mov.precio_unitario.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="text-end text-monospace fw-bold">$${mov.subtotal.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="small">
+                    <div><strong>${mov.referencia_tipo} #${mov.referencia_id}</strong></div>
+                    <div class="text-muted">${mov.referencia_nombre}</div>
+                </td>
+            `;
+            
+            tbody.appendChild(tr);
+        });
+    }
+    
+    function renderizarPaginacion(pag) {
+        const paginacion = document.getElementById('paginacion');
+        paginacion.innerHTML = '';
+        
+        // Info de paginación
+        const start = ((pag.current_page - 1) * 15) + 1;
+        const end = Math.min(pag.current_page * 15, pag.total_count);
+        document.getElementById('paginacionInfo').textContent = 
+            `Mostrando ${start} a ${end} de ${pag.total_count.toLocaleString()} registros`;
+        
+        // Botón anterior
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${!pag.has_previous ? 'disabled' : ''}`;
+        prevLi.innerHTML = `
+            <a class="page-link" href="#" ${pag.has_previous ? `onclick="event.preventDefault(); cargarTransferencias(${pag.current_page - 1})"` : 'onclick="event.preventDefault()"'}>
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        `;
+        paginacion.appendChild(prevLi);
+        
+        // Páginas
+        const maxPages = 5;
+        let startPage = Math.max(1, pag.current_page - Math.floor(maxPages / 2));
+        let endPage = Math.min(pag.total_pages, startPage + maxPages - 1);
+        
+        if (endPage - startPage < maxPages - 1) {
+            startPage = Math.max(1, endPage - maxPages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = `page-item ${i === pag.current_page ? 'active' : ''}`;
+            li.innerHTML = `
+                <a class="page-link" href="#" onclick="event.preventDefault(); cargarTransferencias(${i})">${i}</a>
+            `;
+            paginacion.appendChild(li);
+        }
+        
+        // Botón siguiente
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${!pag.has_next ? 'disabled' : ''}`;
+        nextLi.innerHTML = `
+            <a class="page-link" href="#" ${pag.has_next ? `onclick="event.preventDefault(); cargarTransferencias(${pag.current_page + 1})"` : 'onclick="event.preventDefault()"'}>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        `;
+        paginacion.appendChild(nextLi);
+    }
+    
+    function mostrarError(mensaje) {
+        document.getElementById('errorTexto').textContent = mensaje;
+        document.getElementById('errorMensaje').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('errorMensaje').style.display = 'none';
+        }, 5000);
+    }
+    
+    // Hacer la función global para que pueda ser llamada desde los botones de paginación
+    window.cargarTransferencias = cargarTransferencias;
+});
+</script>
+{% endblock %}

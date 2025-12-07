@@ -127,7 +127,7 @@ def compras_list(request):
         'fecha_desde': fecha_desde,
         'fecha_hasta': fecha_hasta,
     }
-    return render(request, 'compras_list.html', context)
+    return render(request, 'compras/compras_list.html', context)
 
 
 @login_required
@@ -193,7 +193,7 @@ def compra_crear(request):
                 else:
                     messages.success(request, f'¡Compra #{compra.idCompra} guardada!')
                 
-                return redirect('compras_list')
+                return redirect('compras/compras_list')
                 
         except ValueError as e:
             messages.error(request, str(e))
@@ -235,7 +235,7 @@ def compra_detalle(request, pk):
     context = {
         'compra': compra,
     }
-    return render(request, 'compra_detalle.html', context)
+    return render(request, 'compras/compra_detalle.html', context)
 
 @login_required
 def compra_cambiar_estado(request, pk):

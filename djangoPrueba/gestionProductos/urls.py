@@ -26,5 +26,9 @@ urlpatterns = [
     path("marca/ajax/crear/", views.marca_crear_ajax, name="marca_crear_ajax"),
     # CATEGORIAS - AJAX
     path("categoria/ajax/crear/", views.categoria_crear_ajax, name="categoria_crear_ajax"),
+
+    # TRANSFERENCIAS DE STOCK
+    path("transferencias/", views.transferencias_stock, name="transferencias_stock"),
+    path("transferencias/ajax/", views.transferencias_stock_ajax, name="transferencias_stock_ajax"),
 ]
 
