@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'gestionProveedores',
     'gestionVentas',
     'gestionUsuarios',
-    'gestionCompras'
+    'gestionCompras',
+    'gestionInformes'
 ]
 
 MIDDLEWARE = [
@@ -125,3 +126,27 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ============================================================
+# CONFIGURACIÓN DE AUTENTICACIÓN
+# ============================================================
+
+# URL de login
+LOGIN_URL = 'login'
+
+# Redirección después del login exitoso
+LOGIN_REDIRECT_URL = 'home'
+
+# Redirección después del logout
+LOGOUT_REDIRECT_URL = 'login'
+
+# Configuración de mensajes de Django
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}

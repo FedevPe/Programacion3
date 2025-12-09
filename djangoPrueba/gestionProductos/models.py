@@ -34,7 +34,8 @@ class Productos(models.Model):
         (IVA_21, "21%"),
         (IVA_105, "10.5%"),
         (IVA_27, "27%"),
-        (IVA_0, "Exento (0%)"),    ]
+        (IVA_0, "Exento (0%)"),    
+    ]
 
 
     idProducto = models.AutoField(primary_key=True)
@@ -43,8 +44,8 @@ class Productos(models.Model):
     descripcion = models.TextField()
     imgUrl = models.CharField(max_length=500, default='')
     precioUnitario = models.DecimalField(max_digits=18, decimal_places=2)
-    idMarca = models.ForeignKey(Marca, on_delete=models.CASCADE, related_name='Marca')
-    idCategoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='Categoria')
+    idMarca = models.ForeignKey(Marca, on_delete=models.DO_NOTHING, related_name='Marca')
+    idCategoria = models.ForeignKey(Categoria, on_delete=models.DO_NOTHING, related_name='Categoria')
     stock = models.IntegerField(default=0)
     activo = models.BooleanField(default=True)
 

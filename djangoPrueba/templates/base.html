@@ -87,11 +87,6 @@
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            height: 100%;
         }
 
         body {
@@ -307,16 +302,33 @@
                                 <a class="dropdown-item" href="{% url 'categorias_list' %}">
                                     <i class="fas fa-list"></i> Categorías
                                 </a>
+                            </li>                            
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-clipboard-list"></i> Registro de operaciones
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'compras_list' %}">
+                                    <i class="fas fa-shopping-cart"></i> Ordenes de compra
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'ventas_list' %}">
+                                    <i class="fa-solid fa-cash-register"></i> Ordenes de venta
+                                </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'transferencias_stock' %}">
                                     <i class="fa-solid fa-arrow-right-arrow-left"></i> Tranferencias de stock
                                 </a>
-                            </li>
+                            </li>                            
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" >
+                        <a class="nav-link" href="{% url 'proveedores_list' %}">
                             <i class="fas fa-truck"></i> Proveedores
                         </a>
                     </li>                    
@@ -326,13 +338,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'compras_list' %}">
-                            <i class="fas fa-shopping-cart"></i> Compras
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'ventas_list' %}">
-                            <i class="fa-solid fa-cash-register"></i> Ventas
+                        <a class="nav-link" href="{% url 'gestionInformes:dashboard' %}">
+                            <i class="fa-solid fa-chart-pie"></i> Reportes
                         </a>
                     </li>
                 </ul>
@@ -347,12 +354,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">
                                 <i class="fas fa-sign-out-alt"></i> Salir
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt"></i> Ingresar
                             </a>
                         </li>
                     {% endif %}

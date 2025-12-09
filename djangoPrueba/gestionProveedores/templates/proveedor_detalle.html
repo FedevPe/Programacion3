@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Detalle del Proveedor{% endblock %}
+{% block content %}
+<div class="container mt-4 mb-5">
+    
+    <!-- Header -->
+    <div class="page-header bg-slate-neutral">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h2 class="text-slate-light">
+                <i class="fas fa-truck"></i>
+                <span>Detalle del Proveedor</span>
+            </h2>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'proveedores_list' %}" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <a href="{% url 'proveedor_editar' proveedor.idProveedor %}" class="btn btn-edit-header">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Card Principal - Información del Proveedor -->
+        <div class="col-lg-8">
+            <div class="detail-card card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información del Proveedor
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- CUIT -->
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-id-card"></i>
+                                    CUIT
+                                </label>
+                                <div class="info-value">
+                                    <span class="badge-code">{{ proveedor.cuit }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Razón Social -->
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-building"></i>
+                                    Razón Social
+                                </label>
+                                <div class="info-value">
+                                    {{ proveedor.razon_social }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-user"></i>
+                                    Nombre
+                                </label>
+                                <div class="info-value">
+                                    {{ proveedor.nombre }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Apellido -->
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-user"></i>
+                                    Apellido
+                                </label>
+                                <div class="info-value">
+                                    {{ proveedor.apellido }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-envelope"></i>
+                                    Email
+                                </label>
+                                <div class="info-value">
+                                    {% if proveedor.email %}
+                                        <a href="mailto:{{ proveedor.email }}" class="link-info">
+                                            {{ proveedor.email }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No registrado</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-phone"></i>
+                                    Teléfono
+                                </label>
+                                <div class="info-value">
+                                    {% if proveedor.telefono %}
+                                        <a href="tel:{{ proveedor.telefono }}" class="link-info">
+                                            {{ proveedor.telefono }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No registrado</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Card de Resumen -->
+            <div class="detail-card card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Estado
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-item">
+                        <div class="summary-icon {% if proveedor.activo %}bg-success{% else %}bg-danger{% endif %}">
+                            <i class="fas {% if proveedor.activo %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                        </div>
+                        <div class="summary-content">
+                            <span class="summary-label">Estado actual</span>
+                            <span class="summary-value">
+                                {% if proveedor.activo %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Productos -->
+            <div class="detail-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-boxes me-2"></i>
+                        Productos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-item">
+                        <div class="summary-icon bg-primary">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="summary-content">
+                            <span class="summary-label">Productos asociados</span>
+                            <span class="summary-value">
+                                {{ proveedor.productoproveedor_set.count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Header de página */
+    .page-header {
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h2 i {
+        font-size: 2rem;
+        opacity: 0.9;
+    }
+
+    /* Botones del header */
+    .btn-back {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-edit-header {
+        background: white;
+        color: var(--slate-primary);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-edit-header:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        background: var(--slate-light);
+        color: var(--slate-primary);
+    }
+
+    /* Cards de detalle */
+    .detail-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .detail-card .card-header {
+        background: linear-gradient(135deg, var(--slate-primary) 0%, var(--slate-secondary) 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        border: none;
+    }
+
+    .detail-card .card-header h5 {
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-card .card-body {
+        padding: 2rem 1.5rem;
+    }
+
+    /* Items de información */
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-label {
+        color: var(--slate-neutral);
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-label i {
+        color: var(--slate-accent);
+        font-size: 1rem;
+    }
+
+    .info-value {
+        color: var(--slate-secondary);
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+
+    .link-info {
+        color: var(--slate-accent);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .link-info:hover {
+        color: var(--slate-primary);
+        text-decoration: underline;
+    }
+
+    /* Badges */
+    .badge-code {
+        background-color: #e0e7ff;
+        color: black;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Resumen items */
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .summary-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .summary-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .summary-icon.bg-primary {
+        background: linear-gradient(135deg, var(--slate-primary) 0%, var(--slate-secondary) 100%);
+    }
+
+    .summary-icon.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .summary-icon.bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .summary-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .summary-label {
+        color: var(--slate-neutral);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .summary-value {
+        color: var(--slate-secondary);
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+
+    /* Alertas */
+    .alert {
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        animation: slideInDown 0.4s ease;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .detail-card .card-body {
+            padding: 1.5rem 1rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+{% endblock %}

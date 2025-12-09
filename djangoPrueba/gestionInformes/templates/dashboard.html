@@ -1,0 +1,706 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Informes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Variables de color */
+    :root {
+        --slate-primary: #0f172a;
+        --slate-secondary: #1e293b;
+        --slate-tertiary: #334155;
+        --slate-accent: #475569;
+        --slate-light: #f1f5f9;
+        --slate-success: #10b981;
+        --slate-neutral: #64748b;
+        --slate-danger: #ef4444;
+        --slate-warning: #f59e0b;
+        --slate-info: #3b82f6;
+    }
+
+    /* Contenedor principal con mejor espaciado */
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* Header de página */
+    .page-header {
+        background-color: var(--slate-neutral);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h2 i {
+        font-size: 2rem;
+        opacity: 0.9;
+    }
+
+    .dashboard-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--slate-primary);
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .dashboard-subtitle {
+        color: var(--slate-neutral);
+        font-size: 0.95rem;
+    }
+
+    /* Filtros rediseñados */
+    .filters-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .filters-card .form-label {
+        color: var(--slate-secondary);
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .filters-card .form-control {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 0.625rem 1rem;
+        transition: all 0.2s;
+    }
+
+    .filters-card .form-control:focus {
+        border-color: var(--slate-primary);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Stats cards mejoradas */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--stat-color);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+
+    .stat-card.success::before { background: var(--slate-success); }
+    .stat-card.danger::before { background: var(--slate-danger); }
+    .stat-card.info::before { background: var(--slate-info); }
+    .stat-card.warning::before { background: var(--slate-warning); }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--slate-neutral);
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .stat-icon.success { background: #d1fae5; color: var(--slate-success); }
+    .stat-icon.danger { background: #fee2e2; color: var(--slate-danger); }
+    .stat-icon.info { background: #dbeafe; color: var(--slate-info); }
+    .stat-icon.warning { background: #fef3c7; color: var(--slate-warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--slate-primary);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-change {
+        font-size: 0.8125rem;
+        color: var(--slate-neutral);
+    }
+
+    /* Chart card mejorada */
+    .chart-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .chart-header {
+        padding: 1.5rem 1.75rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(to right, var(--slate-primary), var(--slate-secondary));
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chart-body {
+        padding: 2rem 1.75rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 350px;
+    }
+
+    /* Top cards grid */
+    .top-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .top-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .top-card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+    }
+
+    .top-card-header.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .top-card-header.warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .top-card-header.info { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+
+    .top-card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .top-card-icon {
+        font-size: 1.25rem;
+        color: white;
+        opacity: 0.9;
+    }
+
+    .top-table {
+        width: 100%;
+        margin: 0;
+    }
+
+    .top-table thead th {
+        background: var(--slate-light);
+        color: var(--slate-secondary);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0.875rem 1.5rem;
+        border: none;
+    }
+
+    .top-table tbody tr {
+        border-bottom: 1px solid #e2e8f0;
+        transition: background 0.2s;
+    }
+
+    .top-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .top-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .top-table tbody td {
+        padding: 1rem 1.5rem;
+        color: var(--slate-secondary);
+        font-size: 0.9375rem;
+    }
+
+    .rank-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8125rem;
+        background: var(--slate-light);
+        color: var(--slate-primary);
+    }
+
+    .product-code {
+        font-size: 0.75rem;
+        color: var(--slate-neutral);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .product-name {
+        color: var(--slate-secondary);
+        font-weight: 500;
+    }
+
+    .value-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .value-badge.success { background: #d1fae5; color: #059669; }
+    .value-badge.warning { background: #fef3c7; color: #d97706; }
+    .value-badge.info { background: #dbeafe; color: #2563eb; }
+
+    /* Botones mejorados */
+    .btn {
+        border-radius: 10px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-slate-primary {
+        background: var(--slate-primary);
+        color: white;
+    }
+
+    .btn-slate-primary:hover {
+        background: var(--slate-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(15, 23, 42, 0.2);
+    }
+
+    .btn-slate-secondary {
+        background: #e2e8f0;
+        color: var(--slate-secondary);
+    }
+
+    .btn-slate-secondary:hover {
+        background: #cbd5e1;
+    }
+
+    /* Empty state */
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: var(--slate-neutral);
+        font-size: 0.9375rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem;
+        }
+
+        .stats-grid,
+        .top-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-container {
+            height: 280px;
+        }
+
+        .dashboard-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div style="padding-left: 100px; padding-right: 100px;">
+    <!-- Header -->
+    <div class="page-header ">
+        <h2 class="dashboard-title text-white"><i class="fa-solid fa-chart-column"></i> Dashboard de Informes</h1>
+    </div>
+
+    <!-- Filtros de fecha -->
+    <div class="filters-card">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="fecha_desde" class="form-label">Fecha Desde</label>
+                <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" 
+                       value="{{ fecha_desde|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
+                <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" 
+                       value="{{ fecha_hasta|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-slate-primary me-2">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                <a href="{% url 'gestionInformes:dashboard' %}" class="btn btn-slate-secondary">
+                    <i class="fas fa-undo"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cards de estadísticas principales -->
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label">Ingresos Totales</div>
+                </div>
+                <div class="stat-icon success">
+                    <i class="fas fa-arrow-trend-up"></i>
+                </div>
+            </div>
+            <div class="stat-value">${{ flujo_caja.ingresos|floatformat:2 }}</div>
+            <div class="stat-change">Periodo seleccionado</div>
+        </div>
+
+        <div class="stat-card danger">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label">Egresos Totales</div>
+                </div>
+                <div class="stat-icon danger">
+                    <i class="fas fa-arrow-trend-down"></i>
+                </div>
+            </div>
+            <div class="stat-value">${{ flujo_caja.egresos|floatformat:2 }}</div>
+            <div class="stat-change">Periodo seleccionado</div>
+        </div>
+
+        <div class="stat-card {% if flujo_caja.balance >= 0 %}info{% else %}warning{% endif %}">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label">Balance Neto</div>
+                </div>
+                <div class="stat-icon {% if flujo_caja.balance >= 0 %}info{% else %}warning{% endif %}">
+                    <i class="fas fa-scale-balanced"></i>
+                </div>
+            </div>
+            <div class="stat-value">${{ flujo_caja.balance|floatformat:2 }}</div>
+            <div class="stat-change">{% if flujo_caja.balance >= 0 %}Positivo{% else %}Negativo{% endif %}</div>
+        </div>
+
+        <div class="stat-card info">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label">Total Ventas</div>
+                </div>
+                <div class="stat-icon info">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ estadisticas.total_ventas }}</div>
+            <div class="stat-change">Transacciones realizadas</div>
+        </div>
+    </div>
+
+    <!-- Tablas de Top 5 -->
+    <div class="top-grid">
+        <!-- Top 5 Productos -->
+        <div class="top-card">
+            <div class="top-card-header success">
+                <i class="fas fa-box top-card-icon"></i>
+                <h3 class="top-card-title">Top 5 Productos Más Vendidos</h3>
+            </div>
+            <table class="top-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Producto</th>
+                        <th class="text-end" style="width: 100px;">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos_top %}
+                    <tr>
+                        <td><span class="rank-badge">{{ forloop.counter }}</span></td>
+                        <td>
+                            <span class="product-code">{{ producto.producto__codProducto }}</span>
+                            <span class="product-name">{{ producto.producto__nombre|truncatewords:4 }}</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="value-badge success">{{ producto.total_vendido }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="empty-state">
+                            <i class="fas fa-inbox"></i><br>
+                            No hay datos disponibles
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top 5 Proveedores -->
+        <div class="top-card">
+            <div class="top-card-header warning">
+                <i class="fas fa-truck top-card-icon"></i>
+                <h3 class="top-card-title">Top 5 Proveedores</h3>
+            </div>
+            <table class="top-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Proveedor</th>
+                        <th class="text-end" style="width: 100px;">Compras</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proveedor in proveedores_top %}
+                    <tr>
+                        <td><span class="rank-badge">{{ forloop.counter }}</span></td>
+                        <td class="product-name">{{ proveedor.nombre|truncatewords:3 }}</td>
+                        <td class="text-end">
+                            <span class="value-badge warning">{{ proveedor.total_compras }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="empty-state">
+                            <i class="fas fa-inbox"></i><br>
+                            No hay datos disponibles
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top 5 Clientes -->
+        <div class="top-card">
+            <div class="top-card-header info">
+                <i class="fas fa-users top-card-icon"></i>
+                <h3 class="top-card-title">Top 5 Clientes</h3>
+            </div>
+            <table class="top-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Cliente</th>
+                        <th class="text-end" style="width: 120px;">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes_top %}
+                    <tr>
+                        <td><span class="rank-badge">{{ forloop.counter }}</span></td>
+                        <td class="product-name">{{ cliente.nombre|truncatewords:2 }}</td>
+                        <td class="text-end">
+                            <span class="value-badge info">${{ cliente.monto_total|floatformat:0 }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="empty-state">
+                            <i class="fas fa-inbox"></i><br>
+                            No hay datos disponibles
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Gráfico de ventas mensuales -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h2 class="chart-title">
+                <i class="fas fa-chart-line"></i>
+                Ventas/Compras Mensuales {{ fecha_hasta|date:'Y' }}
+            </h2>
+        </div>
+        <div class="chart-body">
+            <div class="chart-container">
+                <canvas id="ventasMensualesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Datos desde Django
+    const ventasData = {{ ventas_mensuales|safe }};
+    const comprasData = {{ compras_mensuales|safe }};
+    
+    // Preparar datos para Chart.js
+    const meses = ventasData.map(v => v.mes);
+    const ventasTotales = ventasData.map(v => v.total);
+    const comprasTotales = comprasData.map(c => c.total);
+    
+    // Crear gráfico comparativo
+    const ctx = document.getElementById('ventasMensualesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: meses,
+            datasets: [
+                {
+                    label: 'Ventas ($)',
+                    data: ventasTotales,
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                },
+                {
+                    label: 'Compras ($)',
+                    data: comprasTotales,
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#64748b',
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        },
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + context.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#e2e8f0',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: {
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return '$' + value.toLocaleString('es-AR');
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
